@@ -1,0 +1,32 @@
+[
+  {
+    "code": "CSC3001",
+    "name_cn": "离散数学",
+    "name_en": "Discrete Mathematics",
+    "school": "SSE"
+  },
+  {
+    "code": "ECO2011",
+    "name_cn": "微观经济学",
+    "name_en": "Microeconomics",
+    "school": "SME"
+  },
+  {
+    "code": "STA2002",
+    "name_cn": "概率统计",
+    "name_en": "Probability and Statistics",
+    "school": "SDS"
+  },
+  {
+    "code": "AIE1003",
+    "name_cn": "人工智能导论",
+    "name_en": "Introduction to Artificial Intelligence",
+    "school": "SAI"
+  },
+  {
+    "code": "FIN3080",
+    "name_cn": "金融衍生产品",
+    "name_en": "Financial Derivatives",
+    "school": "FE"
+  }
+]
