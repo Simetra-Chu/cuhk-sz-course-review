@@ -1,11 +1,18 @@
 import {
+  COURSE_TERMS,
   LEADERBOARD_LIMIT,
   MIN_REVIEWS_FOR_LEADERBOARD,
   SCHOOLS,
+  type CourseTerm,
   type SchoolCode,
 } from "@/lib/constants";
 import { createClient } from "@/lib/supabase/server";
 import type { DbCourse } from "@/types/database";
+
+export type CatalogCourse = Pick<
+  DbCourse,
+  "id" | "code" | "name_cn" | "name_en" | "subject_code"
+>;
 
 export function parseSchoolParam(value?: string): SchoolCode | undefined {
   if (!value) return undefined;
@@ -14,10 +21,19 @@ export function parseSchoolParam(value?: string): SchoolCode | undefined {
     : undefined;
 }
 
-export function buildHomeQuery(params: { q?: string; school?: SchoolCode }) {
+export function parseTermParam(value?: string): CourseTerm | undefined {
+  return COURSE_TERMS.find((term) => term === value);
+}
+
+export function buildHomeQuery(params: {
+  q?: string;
+  school?: SchoolCode;
+  term?: CourseTerm;
+}) {
   const searchParams = new URLSearchParams();
   if (params.q?.trim()) searchParams.set("q", params.q.trim());
   if (params.school) searchParams.set("school", params.school);
+  if (params.term) searchParams.set("term", params.term);
   const query = searchParams.toString();
   return query ? `/?${query}` : "/";
 }
@@ -38,6 +54,7 @@ function sanitizeSearchTerm(term: string) {
 export async function searchCourses(options: {
   q?: string;
   school?: SchoolCode;
+  term?: CourseTerm;
   limit?: number;
 }) {
   const supabase = createClient();
@@ -45,6 +62,9 @@ export async function searchCourses(options: {
 
   if (options.school) {
     query = query.eq("school", options.school);
+  }
+  if (options.term) {
+    query = query.contains("offered_terms", [options.term]);
   }
 
   const term = options.q ? sanitizeSearchTerm(options.q) : "";
@@ -101,4 +121,16 @@ export async function getCourseByCode(code: string) {
     .maybeSingle();
 
   return { data: data as DbCourse | null, error };
+}
+
+export async function getCourseCatalog() {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("courses")
+    .select("id,code,name_cn,name_en,subject_code")
+    .not("subject_code", "is", null)
+    .order("code")
+    .limit(1_000);
+
+  return { data: data as CatalogCourse[] | null, error };
 }

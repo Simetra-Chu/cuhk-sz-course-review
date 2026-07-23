@@ -82,6 +82,54 @@ cuhk-sz-course-review/
 
 在 SQL Editor 运行 `supabase/verify.sql`，应返回 `courses`、`reviews`、`reports` 三张表。
 
+## Phase 2：从教务处开课 PDF 导入课程
+
+SIS 零信任网关会阻止浏览器自动化，因此课程数据改用官方
+Pre-registration Course Offering Information PDF。当前数据覆盖
+AY2025-26 Term 2 与 AY2026-27 Term 1。
+
+### 1. 增加数据库字段
+
+在 Supabase SQL Editor 运行：
+
+```text
+supabase/phase2-course-source.sql
+```
+
+### 2. 从 PDF 提取课程
+
+```powershell
+cd c:\Users\17610\Desktop\cuhk-sz-course-review
+npm run extract:courses
+```
+
+脚本按 PDF 表格坐标提取课程代码、英文名、学院和学期。默认读取本机已提供的
+两份 PDF；也可以按“PDF 路径 + 学期”成对传入自定义文件。原始结果保存在
+`data/pdf-courses.raw.json`，不会提交到 Git。
+
+### 3. 清洗与检查
+
+```powershell
+npm run normalize:courses
+```
+
+检查终端中的总课程数和学院统计。同一课程跨学期会按课程代码合并，并将开课
+学期保存到 `offered_terms`。标题发生变化的课程记录在
+`data/pdf-title-conflicts.json`，默认采用较新学期标题。
+
+### 4. 预览并导入
+
+```powershell
+# 只查看新增/更新统计，不写数据库
+npm run import:courses
+
+# 确认统计合理后正式写入
+npm run import:courses -- --apply
+```
+
+导入按课程代码 upsert，不会改变课程 UUID、既有评价和评分统计，也不会自动删除
+本次 PDF 中未出现的旧课程。
+
 ## Phase 8：部署前配置
 
 1. 在 Supabase SQL Editor 运行 `supabase/phase8-auth-hardening.sql`

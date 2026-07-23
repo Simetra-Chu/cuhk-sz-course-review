@@ -39,8 +39,24 @@ export function CourseCard({ course, rank, compact }: CourseCardProps) {
           {course.name_cn}
         </p>
 
-        {!compact && course.name_en && (
+        {!compact &&
+          course.name_en &&
+          course.name_en.toLocaleLowerCase() !==
+            course.name_cn.toLocaleLowerCase() && (
           <p className="mt-0.5 text-sm text-gray-500">{course.name_en}</p>
+        )}
+
+        {!compact && course.offered_terms?.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {course.offered_terms.map((term) => (
+              <span
+                key={term}
+                className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600"
+              >
+                {term}
+              </span>
+            ))}
+          </div>
         )}
 
         <div className="mt-2 flex items-center gap-3 text-xs text-gray-600">

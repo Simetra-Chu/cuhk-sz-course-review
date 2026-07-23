@@ -34,3 +34,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local course import artifacts
+/data/sis-courses.raw.json
+/data/sis-crawl.checkpoint.json
+/data/sis-unmapped-subjects.json
+/data/sis-import-stale.json
+/data/pdf-courses.raw.json
+/data/pdf-title-conflicts.json

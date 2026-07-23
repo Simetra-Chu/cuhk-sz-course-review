@@ -1,5 +1,6 @@
 import { TrendingUp, Star } from "lucide-react";
 import { CourseCard } from "@/components/courses/CourseCard";
+import { CourseCatalogBrowser } from "@/components/home/CourseCatalogBrowser";
 import { LeaderboardPanel } from "@/components/home/LeaderboardPanel";
 import { SchoolFilter } from "@/components/home/SchoolFilter";
 import { SearchForm } from "@/components/home/SearchForm";
@@ -8,9 +9,11 @@ import {
   SCHOOLS,
 } from "@/lib/constants";
 import {
+  getCourseCatalog,
   getHotCourses,
   getTopRatedCourses,
   parseSchoolParam,
+  parseTermParam,
   searchCourses,
 } from "@/lib/courses";
 
@@ -18,22 +21,38 @@ type HomeProps = {
   searchParams?: {
     q?: string;
     school?: string;
+    term?: string;
   };
 };
 
 export default async function Home({ searchParams }: HomeProps) {
   const query = searchParams?.q?.trim() ?? "";
   const school = parseSchoolParam(searchParams?.school);
-  const isFiltering = Boolean(query || school);
+  const term = parseTermParam(searchParams?.term);
+  const isFiltering = Boolean(query || school || term);
+  const filterDescriptions = [
+    query ? `关键词「${query}」` : null,
+    school
+      ? `学院 ${SCHOOLS.find((item) => item.code === school)?.name ?? school}`
+      : null,
+    term ? `学期 ${term}` : null,
+  ].filter(Boolean);
 
   const [
     searchResult,
+    catalogResult,
     topRatedResult,
     hotResult,
   ] = await Promise.all([
     isFiltering
-      ? searchCourses({ q: query || undefined, school })
+      ? searchCourses({
+          q: query || undefined,
+          school,
+          term,
+          limit: 200,
+        })
       : Promise.resolve({ data: null, error: null }),
+    getCourseCatalog(),
     getTopRatedCourses(),
     getHotCourses(),
   ]);
@@ -59,12 +78,34 @@ export default async function Home({ searchParams }: HomeProps) {
         <label htmlFor="search" className="text-sm font-medium text-purple-900">
           搜索课程
         </label>
-        <SearchForm defaultQuery={query} school={school} />
+        <SearchForm
+          defaultQuery={query}
+          school={school}
+          term={term}
+        />
+      </section>
+
+      <section className="mt-8">
+        <h2 className="text-xl font-semibold text-purple-900">浏览课程目录</h2>
+        <p className="mt-1 text-sm text-gray-600">
+          先选择学科代码首字母，再展开学科查看课程。
+        </p>
+        {catalogResult.error ? (
+          <p className="mt-4 text-sm text-red-600">
+            课程目录加载失败：{catalogResult.error.message}
+          </p>
+        ) : (
+          <CourseCatalogBrowser courses={catalogResult.data ?? []} />
+        )}
       </section>
 
       <section className="mt-8">
         <h2 className="text-lg font-semibold text-purple-900">按学院筛选</h2>
-        <SchoolFilter activeSchool={school} query={query || undefined} />
+        <SchoolFilter
+          activeSchool={school}
+          query={query || undefined}
+          term={term}
+        />
       </section>
 
       {isFiltering && (
@@ -73,10 +114,7 @@ export default async function Home({ searchParams }: HomeProps) {
             <div>
               <h2 className="text-lg font-semibold text-purple-900">搜索结果</h2>
               <p className="mt-1 text-sm text-gray-600">
-                {query && `关键词「${query}」`}
-                {query && school && " · "}
-                {school &&
-                  `学院 ${SCHOOLS.find((s) => s.code === school)?.name ?? school}`}
+                {filterDescriptions.join(" · ")}
               </p>
             </div>
             <p className="text-sm text-gray-500">共 {courses.length} 门课</p>

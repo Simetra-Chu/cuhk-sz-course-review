@@ -20,6 +20,13 @@ create table if not exists public.courses (
   name_cn text not null,
   name_en text,
   school public.school_code not null,
+  subject_code text,
+  subject_name text,
+  source text not null default 'manual'
+    check (source in ('manual', 'sis', 'registry')),
+  source_url text,
+  offered_terms text[] not null default '{}',
+  last_synced_at timestamptz,
   avg_rating numeric(3, 2) not null default 0,
   avg_difficulty numeric(3, 2) not null default 0,
   avg_grading numeric(3, 2) not null default 0,

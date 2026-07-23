@@ -16,6 +16,54 @@ export const SCHOOLS = [
 
 export type SchoolCode = (typeof SCHOOLS)[number]["code"];
 
+export const COURSE_TERMS = [
+  "AY2026-27 Term 1",
+  "AY2025-26 Term 2",
+] as const;
+
+export type CourseTerm = (typeof COURSE_TERMS)[number];
+
+export const COURSE_INITIALS = [
+  "A",
+  "B",
+  "C",
+  "D",
+  "E",
+  "F",
+  "G",
+  "H",
+  "I",
+  "J",
+  "K",
+  "L",
+  "M",
+  "N",
+  "O",
+  "P",
+  "Q",
+  "R",
+  "S",
+  "T",
+  "U",
+  "V",
+  "W",
+  "X",
+  "Y",
+  "Z",
+  "0",
+  "1",
+  "2",
+  "3",
+  "4",
+  "5",
+  "6",
+  "7",
+  "8",
+  "9",
+] as const;
+
+export type CourseInitial = (typeof COURSE_INITIALS)[number];
+
 export const ALLOWED_EMAIL_DOMAIN = "@link.cuhk.edu.cn";
 
 /** 高分榜：至少几条评价才计入 */

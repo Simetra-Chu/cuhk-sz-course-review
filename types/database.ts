@@ -1,5 +1,7 @@
 import type { SchoolCode } from "@/lib/constants";
 
+export type CourseSource = "manual" | "sis" | "registry";
+
 /** 与 Supabase public.courses 表对应 */
 export type DbCourse = {
   id: string;
@@ -7,6 +9,12 @@ export type DbCourse = {
   name_cn: string;
   name_en: string | null;
   school: SchoolCode;
+  subject_code: string | null;
+  subject_name: string | null;
+  source: CourseSource;
+  source_url: string | null;
+  offered_terms: string[];
+  last_synced_at: string | null;
   avg_rating: number;
   avg_difficulty: number;
   avg_grading: number;
