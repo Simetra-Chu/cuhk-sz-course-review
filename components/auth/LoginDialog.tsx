@@ -1,6 +1,7 @@
 "use client";
 
 import { Loader2, LogIn, Mail, X } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
@@ -23,6 +24,7 @@ export function LoginDialog({ open, onClose }: LoginDialogProps) {
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   useEffect(() => {
     if (!open) {
@@ -32,6 +34,7 @@ export function LoginDialog({ open, onClose }: LoginDialogProps) {
       setError(null);
       setMessage(null);
       setLoading(false);
+      setAgreedToTerms(false);
     }
   }, [open]);
 
@@ -56,6 +59,10 @@ export function LoginDialog({ open, onClose }: LoginDialogProps) {
     const emailError = getEmailError(email);
     if (emailError) {
       setError(emailError);
+      return;
+    }
+    if (!agreedToTerms) {
+      setError("请先阅读并同意用户协议、免责声明与隐私说明");
       return;
     }
 
@@ -172,11 +179,35 @@ export function LoginDialog({ open, onClose }: LoginDialogProps) {
               </div>
             </div>
 
+            <label className="flex cursor-pointer items-start gap-2.5 text-sm leading-6 text-gray-600">
+              <input
+                type="checkbox"
+                checked={agreedToTerms}
+                onChange={(event) => {
+                  setAgreedToTerms(event.target.checked);
+                  if (event.target.checked) setError(null);
+                }}
+                required
+                className="mt-1 h-4 w-4 shrink-0 rounded border-gray-300 text-purple-700 accent-purple-700"
+              />
+              <span>
+                我已阅读并同意
+                <Link
+                  href="/disclaimer#user-agreement"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mx-1 text-purple-700 underline underline-offset-2 hover:text-purple-900"
+                >
+                  用户协议、免责声明与隐私说明
+                </Link>
+              </span>
+            </label>
+
             {error && <p className="text-sm text-red-600">{error}</p>}
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !agreedToTerms}
               className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-purple-700 py-3 text-sm font-medium text-white transition hover:bg-purple-800 disabled:opacity-60"
             >
               {loading && <Loader2 className="h-4 w-4 animate-spin" />}

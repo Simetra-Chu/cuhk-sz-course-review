@@ -14,7 +14,7 @@ export function Footer() {
             href="/disclaimer"
             className="text-purple-600 underline-offset-4 hover:underline"
           >
-            免责声明与隐私说明
+            用户协议、免责声明与隐私说明
           </Link>
         </div>
       </div>
