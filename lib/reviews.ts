@@ -1,4 +1,5 @@
 import {
+  MAX_CUSTOM_REVIEW_TAGS,
   MAX_CUSTOM_TAG_LENGTH,
   MAX_REVIEW_TAGS,
   MIN_CUSTOM_TAG_LENGTH,
@@ -44,8 +45,8 @@ export function validateReviewForm(values: ReviewFormValues) {
   }
 
   const customTags = tags.filter((tag) => !isPresetReviewTag(tag));
-  if (customTags.length > 1) {
-    return "每条评价最多添加 1 个自定义标签";
+  if (customTags.length > MAX_CUSTOM_REVIEW_TAGS) {
+    return `每条评价最多添加 ${MAX_CUSTOM_REVIEW_TAGS} 个自定义标签`;
   }
   if (
     customTags.some(

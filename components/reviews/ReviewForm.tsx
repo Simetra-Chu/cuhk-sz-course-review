@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ScoreInput } from "@/components/reviews/ScoreInput";
 import {
+  MAX_CUSTOM_REVIEW_TAGS,
   MAX_CUSTOM_TAG_LENGTH,
   MAX_REVIEW_TAGS,
   MIN_CUSTOM_TAG_LENGTH,
@@ -36,7 +37,8 @@ export function ReviewForm({ courseId, existingReview }: ReviewFormProps) {
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const customTag = tags.find((tag) => !isPresetReviewTag(tag));
+  const customTags = tags.filter((tag) => !isPresetReviewTag(tag));
+  const canAddCustomTag = customTags.length < MAX_CUSTOM_REVIEW_TAGS;
 
   function toggleTag(tag: string) {
     setTags((current) => {
@@ -67,12 +69,20 @@ export function ReviewForm({ courseId, existingReview }: ReviewFormProps) {
       setError("该标签已在预设选项中，请直接选择");
       return;
     }
+    if (tags.includes(tag)) {
+      setError("该标签已添加");
+      return;
+    }
 
-    const existingCustomTag = tags.find((item) => !isPresetReviewTag(item));
-    const nextTags = existingCustomTag
-      ? tags.map((item) => (item === existingCustomTag ? tag : item))
-      : [...tags, tag];
+    const existingCustomCount = tags.filter(
+      (item) => !isPresetReviewTag(item)
+    ).length;
+    if (existingCustomCount >= MAX_CUSTOM_REVIEW_TAGS) {
+      setError(`每条评价最多添加 ${MAX_CUSTOM_REVIEW_TAGS} 个自定义标签`);
+      return;
+    }
 
+    const nextTags = [...tags, tag];
     if (normalizeReviewTags(nextTags).length > MAX_REVIEW_TAGS) {
       setError(`每条评价最多选择 ${MAX_REVIEW_TAGS} 个标签`);
       return;
@@ -242,8 +252,9 @@ export function ReviewForm({ courseId, existingReview }: ReviewFormProps) {
               </button>
             );
           })}
-          {customTag && (
+          {customTags.map((customTag) => (
             <button
+              key={customTag}
               type="button"
               onClick={() =>
                 setTags((current) =>
@@ -256,18 +267,18 @@ export function ReviewForm({ courseId, existingReview }: ReviewFormProps) {
               {customTag}
               <X className="h-3.5 w-3.5" />
             </button>
-          )}
-          {!showCustomTagInput && (
+          ))}
+          {!showCustomTagInput && canAddCustomTag && (
             <button
               type="button"
               onClick={() => {
-                setCustomTagDraft(customTag ?? "");
+                setCustomTagDraft("");
                 setShowCustomTagInput(true);
               }}
               className="inline-flex items-center gap-1 rounded-full border border-dashed border-purple-300 px-3 py-1.5 text-sm text-purple-700 transition hover:bg-purple-50"
             >
               <Plus className="h-3.5 w-3.5" />
-              {customTag ? "修改自定义" : "自定义"}
+              自定义
             </button>
           )}
         </div>
@@ -308,7 +319,8 @@ export function ReviewForm({ courseId, existingReview }: ReviewFormProps) {
           </div>
         )}
         <p className="mt-2 text-xs text-gray-500">
-          已选 {tags.length}/{MAX_REVIEW_TAGS}，最多 1 个自定义标签
+          已选 {tags.length}/{MAX_REVIEW_TAGS}，最多 {MAX_CUSTOM_REVIEW_TAGS}{" "}
+          个自定义标签
         </p>
       </div>
 

@@ -86,6 +86,7 @@ export const REVIEW_TAGS = [
 
 export type ReviewTag = (typeof REVIEW_TAGS)[number];
 export const MAX_REVIEW_TAGS = 5;
+export const MAX_CUSTOM_REVIEW_TAGS = 2;
 export const MIN_CUSTOM_TAG_LENGTH = 2;
 export const MAX_CUSTOM_TAG_LENGTH = 8;
 
