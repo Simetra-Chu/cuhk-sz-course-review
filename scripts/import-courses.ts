@@ -23,6 +23,9 @@ type ExistingCourse = {
   source: string;
   source_url: string | null;
   offered_terms: string[];
+  prerequisite: string | null;
+  corequisite: string | null;
+  exclusion: string | null;
 };
 
 async function loadExistingCourses() {
@@ -33,7 +36,7 @@ async function loadExistingCourses() {
     const { data, error } = await supabase
       .from("courses")
       .select(
-        "code,name_cn,name_en,school,subject_code,subject_name,source,source_url,offered_terms"
+        "code,name_cn,name_en,school,subject_code,subject_name,source,source_url,offered_terms,prerequisite,corequisite,exclusion"
       )
       .order("code")
       .range(from, from + PAGE_SIZE - 1);
@@ -45,6 +48,15 @@ async function loadExistingCourses() {
       ) {
         throw new Error(
           "数据库还没有 Phase 2 字段。请先在 Supabase SQL Editor 运行 supabase/phase2-course-source.sql。"
+        );
+      }
+      if (
+        error.message.includes("prerequisite") ||
+        error.message.includes("corequisite") ||
+        error.message.includes("exclusion")
+      ) {
+        throw new Error(
+          "数据库还没有先修字段。请先在 Supabase SQL Editor 运行 supabase/phase5-course-prerequisites.sql。"
         );
       }
       throw error;
@@ -66,7 +78,10 @@ function sameCourse(a: ExistingCourse, b: ExistingCourse) {
     a.subject_name === b.subject_name &&
     a.source === b.source &&
     a.source_url === b.source_url &&
-    JSON.stringify(a.offered_terms) === JSON.stringify(b.offered_terms)
+    JSON.stringify(a.offered_terms) === JSON.stringify(b.offered_terms) &&
+    a.prerequisite === b.prerequisite &&
+    a.corequisite === b.corequisite &&
+    a.exclusion === b.exclusion
   );
 }
 

@@ -5,6 +5,9 @@ export type PdfRawCourse = {
   title: string;
   school: SchoolCode;
   units: number | null;
+  prerequisite: string | null;
+  corequisite: string | null;
+  exclusion: string | null;
   term: string;
   sourceFile: string;
   page: number;
@@ -20,6 +23,9 @@ export type NormalizedCourse = {
   source: "sis" | "registry";
   source_url: string | null;
   offered_terms: string[];
+  prerequisite: string | null;
+  corequisite: string | null;
+  exclusion: string | null;
   last_synced_at: string;
   mapping_reason: "subject-prefix" | "hss-fallback" | "pdf-department";
 };

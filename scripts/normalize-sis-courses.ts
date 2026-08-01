@@ -61,6 +61,9 @@ async function main() {
       source: "registry",
       source_url: null,
       offered_terms: [item.term],
+      prerequisite: item.prerequisite,
+      corequisite: item.corequisite,
+      exclusion: item.exclusion,
       last_synced_at: syncedAt,
       mapping_reason: "pdf-department",
     };
@@ -80,6 +83,11 @@ async function main() {
       normalized.offered_terms = Array.from(
         new Set([...previous.offered_terms, item.term])
       );
+      // 跨学期合并：有内容的学期覆盖空值；两边都有时采用较新学期。
+      normalized.prerequisite =
+        normalized.prerequisite ?? previous.prerequisite;
+      normalized.corequisite = normalized.corequisite ?? previous.corequisite;
+      normalized.exclusion = normalized.exclusion ?? previous.exclusion;
     }
     normalizedMap.set(code, normalized);
   }

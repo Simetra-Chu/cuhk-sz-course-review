@@ -14,6 +14,9 @@ export type DbCourse = {
   source: CourseSource;
   source_url: string | null;
   offered_terms: string[];
+  prerequisite: string | null;
+  corequisite: string | null;
+  exclusion: string | null;
   last_synced_at: string | null;
   avg_rating: number;
   avg_difficulty: number;

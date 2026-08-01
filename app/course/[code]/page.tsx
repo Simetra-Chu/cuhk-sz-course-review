@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Star } from "lucide-react";
+import { PrerequisitesButton } from "@/components/courses/PrerequisitesButton";
 import { ProfessorRecommendationSection } from "@/components/courses/ProfessorRecommendationSection";
 import { ReviewRequestButton } from "@/components/courses/ReviewRequestButton";
 import { ReviewCard } from "@/components/reviews/ReviewCard";
@@ -114,7 +115,13 @@ export default async function CoursePage({ params }: CoursePageProps) {
           <span>{course.review_count} 条评价</span>
         </div>
 
-        <div className="mt-5">
+        <div className="mt-5 flex flex-wrap items-center gap-3">
+          <PrerequisitesButton
+            courseCode={course.code}
+            prerequisite={course.prerequisite}
+            corequisite={course.corequisite}
+            exclusion={course.exclusion}
+          />
           <ReviewRequestButton
             courseId={course.id}
             isLoggedIn={isLoggedIn}

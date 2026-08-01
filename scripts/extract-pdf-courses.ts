@@ -51,12 +51,53 @@ type TextItem = {
   y: number;
 };
 
+const HEADER_LABELS = new Set([
+  "department",
+  "course code",
+  "course title",
+  "units",
+  "un",
+  "its",
+  "instructors",
+  "language of instruction",
+  "quota",
+  "activity counts",
+  "prerequisite",
+  "corequisite",
+  "exclusion",
+  "co-listed course",
+  "o-listed course",
+  "remark",
+]);
+
 function cleanText(value: string) {
   return value
     .replace(/\u00a0/g, " ")
     .replace(/\s+([,.;:!?])/g, "$1")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function fieldText(
+  items: TextItem[],
+  minX: number,
+  maxX: number,
+  codeY: number
+) {
+  const text = cleanText(
+    items
+      .filter((item) => item.x >= minX && item.x < maxX)
+      .filter((item) => !HEADER_LABELS.has(cleanText(item.text).toLowerCase()))
+      .sort(
+        (a, b) =>
+          Math.abs(a.y - codeY) - Math.abs(b.y - codeY) ||
+          b.y - a.y ||
+          a.x - b.x
+      )
+      .map((item) => item.text)
+      .join(" ")
+  );
+  return text.length > 0 ? text : null;
 }
 
 function getSources() {
@@ -152,6 +193,9 @@ function parsePage(
       title,
       school,
       units: unitsText ? Number(unitsText) : null,
+      prerequisite: fieldText(recordItems, 940, 1235, codeItem.y),
+      corequisite: fieldText(recordItems, 1235, 1325, codeItem.y),
+      exclusion: fieldText(recordItems, 1325, 1475, codeItem.y),
       term: source.term,
       sourceFile: path.basename(source.filePath),
       page: pageNumber,
