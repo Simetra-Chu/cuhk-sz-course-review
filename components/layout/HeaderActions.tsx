@@ -28,10 +28,10 @@ export function HeaderActions({ email }: HeaderActionsProps) {
   const feedbackLink = (
     <Link
       href="/feedback"
-      className="inline-flex items-center gap-1.5 text-sm font-medium text-purple-800 transition hover:text-purple-950"
+      className="inline-flex items-center gap-1.5 rounded-full border border-purple-300 bg-purple-50 px-3 py-2 text-sm font-semibold text-purple-800 transition hover:border-purple-500 hover:bg-purple-100"
     >
       <MessageSquare className="h-4 w-4" />
-      <span className="hidden sm:inline">反馈</span>
+      反馈
     </Link>
   );
 

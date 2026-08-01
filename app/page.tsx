@@ -1,4 +1,5 @@
-import { MessageCircle, TrendingUp, Star } from "lucide-react";
+import Link from "next/link";
+import { MessageCircle, MessageSquarePlus, TrendingUp, Star } from "lucide-react";
 import { CourseCard } from "@/components/courses/CourseCard";
 import { CourseCatalogBrowser } from "@/components/home/CourseCatalogBrowser";
 import { LeaderboardPanel } from "@/components/home/LeaderboardPanel";
@@ -79,6 +80,13 @@ export default async function Home({ searchParams }: HomeProps) {
         <p className="mt-4 max-w-2xl text-purple-100">
           帮你快速了解课程难度、给分与真实评价。无需登录即可浏览，发表评价需校内邮箱验证。
         </p>
+        <Link
+          href="/feedback"
+          className="mt-6 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2.5 text-sm font-semibold text-purple-800 transition hover:bg-purple-100"
+        >
+          <MessageSquarePlus className="h-4 w-4" />
+          缺课或遇到问题？点这里反馈
+        </Link>
       </section>
 
       <section className="mt-8 rounded-2xl border border-purple-100 bg-white p-6 shadow-sm">
