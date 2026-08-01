@@ -92,6 +92,11 @@ export const MAX_CUSTOM_TAG_LENGTH = 8;
 /** 评价正文最少字数（与数据库 check 一致） */
 export const MIN_REVIEW_CONTENT_LENGTH = 16;
 
+/** 推荐教授专栏 */
+export const MIN_PROFESSOR_NAME_LENGTH = 2;
+export const MAX_PROFESSOR_NAME_LENGTH = 40;
+export const MIN_PROFESSOR_REC_CONTENT_LENGTH = 8;
+
 /** 教务处「本科专业」索引页 */
 export const REGISTRY_MAJORS_URL = "http://registry.cuhk.edu.cn/page/20";
 

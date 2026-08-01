@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Star } from "lucide-react";
+import { ProfessorRecommendationSection } from "@/components/courses/ProfessorRecommendationSection";
 import { ReviewRequestButton } from "@/components/courses/ReviewRequestButton";
 import { ReviewCard } from "@/components/reviews/ReviewCard";
 import { ReviewForm } from "@/components/reviews/ReviewForm";
@@ -11,7 +12,7 @@ import {
   getSchoolName,
 } from "@/lib/courses";
 import { createClient } from "@/lib/supabase/server";
-import type { DbReview } from "@/types/database";
+import type { DbProfessorRecommendation, DbReview } from "@/types/database";
 
 type CoursePageProps = {
   params: {
@@ -33,11 +34,23 @@ export default async function CoursePage({ params }: CoursePageProps) {
 
   const isLoggedIn = Boolean(user?.email && isAllowedEmail(user.email));
 
-  const { data: reviews } = await supabase
-    .from("reviews")
-    .select("*")
-    .eq("course_id", course.id)
-    .order("created_at", { ascending: false });
+  const [reviewsResult, professorRecsResult] = await Promise.all([
+    supabase
+      .from("reviews")
+      .select("*")
+      .eq("course_id", course.id)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("professor_recommendations")
+      .select("*")
+      .eq("course_id", course.id)
+      .eq("status", "visible")
+      .order("created_at", { ascending: false }),
+  ]);
+  const reviews = reviewsResult.data;
+  const professorRecs = professorRecsResult.error
+    ? []
+    : professorRecsResult.data;
 
   let myReview: DbReview | null = null;
   let hasRequestedReview = false;
@@ -61,6 +74,8 @@ export default async function CoursePage({ params }: CoursePageProps) {
   }
 
   const visibleReviews = reviews ?? [];
+  const recommendations = (professorRecs ??
+    []) as DbProfessorRecommendation[];
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-10">
@@ -108,6 +123,13 @@ export default async function CoursePage({ params }: CoursePageProps) {
           />
         </div>
       </section>
+
+      <ProfessorRecommendationSection
+        courseId={course.id}
+        isLoggedIn={isLoggedIn}
+        currentUserId={user?.id}
+        initialItems={recommendations}
+      />
 
       <section className="mt-8 space-y-4">
         {isLoggedIn ? (

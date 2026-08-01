@@ -101,6 +101,23 @@ create table if not exists public.review_requests (
   unique (course_id, user_id)
 );
 
+-- 7. 推荐教授专栏（仅推荐留言，不汇总票数）
+create table if not exists public.professor_recommendations (
+  id uuid primary key default gen_random_uuid(),
+  course_id uuid not null references public.courses(id) on delete cascade,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  professor_name text not null
+    check (
+      char_length(trim(professor_name)) >= 2
+      and char_length(trim(professor_name)) <= 40
+    ),
+  content text not null
+    check (char_length(trim(content)) >= 8),
+  status public.review_status not null default 'visible',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 -- 6. 索引
 create index if not exists idx_courses_school on public.courses (school);
 create index if not exists idx_courses_code_trgm on public.courses using gin (code gin_trgm_ops);
@@ -111,6 +128,17 @@ create index if not exists idx_reviews_recent_visible on public.reviews (created
 create index if not exists idx_review_requests_course on public.review_requests (course_id);
 create index if not exists idx_review_requests_user on public.review_requests (user_id);
 create index if not exists idx_courses_request_count on public.courses (request_count desc);
+create unique index if not exists uq_prof_rec_course_user_name
+on public.professor_recommendations (
+  course_id,
+  user_id,
+  lower(trim(professor_name))
+);
+create index if not exists idx_prof_rec_course_visible
+on public.professor_recommendations (course_id, created_at desc)
+where status = 'visible';
+create index if not exists idx_prof_rec_user
+on public.professor_recommendations (user_id);
 
 -- 7. 自动更新 updated_at
 create or replace function public.set_updated_at()
@@ -131,6 +159,11 @@ for each row execute function public.set_updated_at();
 drop trigger if exists trg_reviews_updated_at on public.reviews;
 create trigger trg_reviews_updated_at
 before update on public.reviews
+for each row execute function public.set_updated_at();
+
+drop trigger if exists trg_prof_rec_updated_at on public.professor_recommendations;
+create trigger trg_prof_rec_updated_at
+before update on public.professor_recommendations
 for each row execute function public.set_updated_at();
 
 -- 8. 评价变更时，重算课程统计
@@ -255,6 +288,7 @@ alter table public.courses enable row level security;
 alter table public.reviews enable row level security;
 alter table public.reports enable row level security;
 alter table public.review_requests enable row level security;
+alter table public.professor_recommendations enable row level security;
 
 -- 仅允许港中深校内邮箱执行写操作
 create or replace function public.is_school_email()
@@ -337,5 +371,36 @@ with check (auth.uid() = user_id and public.is_school_email());
 drop policy if exists "review_requests_delete_own" on public.review_requests;
 create policy "review_requests_delete_own"
 on public.review_requests for delete
+to authenticated
+using (auth.uid() = user_id and public.is_school_email());
+
+drop policy if exists "prof_rec_public_read_visible" on public.professor_recommendations;
+create policy "prof_rec_public_read_visible"
+on public.professor_recommendations for select
+to anon, authenticated
+using (status = 'visible');
+
+drop policy if exists "prof_rec_read_own" on public.professor_recommendations;
+create policy "prof_rec_read_own"
+on public.professor_recommendations for select
+to authenticated
+using (auth.uid() = user_id);
+
+drop policy if exists "prof_rec_insert_own" on public.professor_recommendations;
+create policy "prof_rec_insert_own"
+on public.professor_recommendations for insert
+to authenticated
+with check (auth.uid() = user_id and public.is_school_email());
+
+drop policy if exists "prof_rec_update_own" on public.professor_recommendations;
+create policy "prof_rec_update_own"
+on public.professor_recommendations for update
+to authenticated
+using (auth.uid() = user_id and public.is_school_email())
+with check (auth.uid() = user_id and public.is_school_email());
+
+drop policy if exists "prof_rec_delete_own" on public.professor_recommendations;
+create policy "prof_rec_delete_own"
+on public.professor_recommendations for delete
 to authenticated
 using (auth.uid() = user_id and public.is_school_email());

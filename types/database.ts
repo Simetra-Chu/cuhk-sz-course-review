@@ -56,3 +56,15 @@ export type DbReviewRequest = {
   user_id: string;
   created_at: string;
 };
+
+/** 与 Supabase public.professor_recommendations 表对应 */
+export type DbProfessorRecommendation = {
+  id: string;
+  course_id: string;
+  user_id: string;
+  professor_name: string;
+  content: string;
+  status: "visible" | "hidden";
+  created_at: string;
+  updated_at: string;
+};
