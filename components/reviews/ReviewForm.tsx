@@ -1,11 +1,20 @@
 "use client";
 
-import { Loader2, Trash2 } from "lucide-react";
+import { Loader2, Plus, Trash2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ScoreInput } from "@/components/reviews/ScoreInput";
-import { REVIEW_TAGS } from "@/lib/constants";
-import { validateReviewForm } from "@/lib/reviews";
+import {
+  MAX_CUSTOM_TAG_LENGTH,
+  MAX_REVIEW_TAGS,
+  MIN_CUSTOM_TAG_LENGTH,
+  REVIEW_TAGS,
+} from "@/lib/constants";
+import {
+  isPresetReviewTag,
+  normalizeReviewTags,
+  validateReviewForm,
+} from "@/lib/reviews";
 import { createClient } from "@/lib/supabase/client";
 import type { DbReview } from "@/types/database";
 
@@ -20,18 +29,59 @@ export function ReviewForm({ courseId, existingReview }: ReviewFormProps) {
   const [difficulty, setDifficulty] = useState(existingReview?.difficulty ?? 0);
   const [grading, setGrading] = useState(existingReview?.grading ?? 0);
   const [tags, setTags] = useState<string[]>(existingReview?.tags ?? []);
+  const [customTagDraft, setCustomTagDraft] = useState("");
+  const [showCustomTagInput, setShowCustomTagInput] = useState(false);
   const [content, setContent] = useState(existingReview?.content ?? "");
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const customTag = tags.find((tag) => !isPresetReviewTag(tag));
 
   function toggleTag(tag: string) {
-    setTags((current) =>
-      current.includes(tag)
-        ? current.filter((item) => item !== tag)
-        : [...current, tag]
-    );
+    setTags((current) => {
+      if (current.includes(tag)) {
+        return current.filter((item) => item !== tag);
+      }
+      if (current.length >= MAX_REVIEW_TAGS) {
+        setError(`每条评价最多选择 ${MAX_REVIEW_TAGS} 个标签`);
+        return current;
+      }
+      setError(null);
+      return [...current, tag];
+    });
+  }
+
+  function addCustomTag() {
+    const tag = customTagDraft.trim();
+    if (
+      tag.length < MIN_CUSTOM_TAG_LENGTH ||
+      tag.length > MAX_CUSTOM_TAG_LENGTH
+    ) {
+      setError(
+        `自定义标签需为 ${MIN_CUSTOM_TAG_LENGTH}–${MAX_CUSTOM_TAG_LENGTH} 个字`
+      );
+      return;
+    }
+    if (isPresetReviewTag(tag)) {
+      setError("该标签已在预设选项中，请直接选择");
+      return;
+    }
+
+    const existingCustomTag = tags.find((item) => !isPresetReviewTag(item));
+    const nextTags = existingCustomTag
+      ? tags.map((item) => (item === existingCustomTag ? tag : item))
+      : [...tags, tag];
+
+    if (normalizeReviewTags(nextTags).length > MAX_REVIEW_TAGS) {
+      setError(`每条评价最多选择 ${MAX_REVIEW_TAGS} 个标签`);
+      return;
+    }
+
+    setTags(normalizeReviewTags(nextTags));
+    setCustomTagDraft("");
+    setShowCustomTagInput(false);
+    setError(null);
   }
 
   async function handleSubmit(event: React.FormEvent) {
@@ -68,7 +118,7 @@ export function ReviewForm({ courseId, existingReview }: ReviewFormProps) {
       rating,
       difficulty,
       grading,
-      tags,
+      tags: normalizeReviewTags(tags),
       content: content.trim(),
     };
 
@@ -133,6 +183,8 @@ export function ReviewForm({ courseId, existingReview }: ReviewFormProps) {
     setDifficulty(0);
     setGrading(0);
     setTags([]);
+    setCustomTagDraft("");
+    setShowCustomTagInput(false);
     setContent("");
     router.refresh();
   }
@@ -175,7 +227,74 @@ export function ReviewForm({ courseId, existingReview }: ReviewFormProps) {
               </button>
             );
           })}
+          {customTag && (
+            <button
+              type="button"
+              onClick={() =>
+                setTags((current) =>
+                  current.filter((item) => item !== customTag)
+                )
+              }
+              className="inline-flex items-center gap-1 rounded-full border border-purple-700 bg-purple-700 px-3 py-1.5 text-sm text-white"
+              title="删除自定义标签"
+            >
+              {customTag}
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
+          {!showCustomTagInput && (
+            <button
+              type="button"
+              onClick={() => {
+                setCustomTagDraft(customTag ?? "");
+                setShowCustomTagInput(true);
+              }}
+              className="inline-flex items-center gap-1 rounded-full border border-dashed border-purple-300 px-3 py-1.5 text-sm text-purple-700 transition hover:bg-purple-50"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              {customTag ? "修改自定义" : "自定义"}
+            </button>
+          )}
         </div>
+        {showCustomTagInput && (
+          <div className="mt-3 flex max-w-sm items-center gap-2">
+            <input
+              type="text"
+              value={customTagDraft}
+              maxLength={MAX_CUSTOM_TAG_LENGTH}
+              onChange={(event) => setCustomTagDraft(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  addCustomTag();
+                }
+              }}
+              placeholder={`${MIN_CUSTOM_TAG_LENGTH}–${MAX_CUSTOM_TAG_LENGTH} 个字`}
+              aria-label="自定义评价标签"
+              className="min-w-0 flex-1 rounded-lg border border-purple-200 px-3 py-2 text-sm outline-none ring-purple-200 focus:ring-2"
+            />
+            <button
+              type="button"
+              onClick={addCustomTag}
+              className="rounded-lg bg-purple-700 px-3 py-2 text-sm font-medium text-white hover:bg-purple-800"
+            >
+              添加
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setShowCustomTagInput(false);
+                setCustomTagDraft("");
+              }}
+              className="rounded-lg px-2 py-2 text-sm text-gray-500 hover:bg-gray-100"
+            >
+              取消
+            </button>
+          </div>
+        )}
+        <p className="mt-2 text-xs text-gray-500">
+          已选 {tags.length}/{MAX_REVIEW_TAGS}，最多 1 个自定义标签
+        </p>
       </div>
 
       <div className="mt-6">

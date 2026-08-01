@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Star } from "lucide-react";
+import { ReviewRequestButton } from "@/components/courses/ReviewRequestButton";
 import { ReviewCard } from "@/components/reviews/ReviewCard";
 import { ReviewForm } from "@/components/reviews/ReviewForm";
 import { isAllowedEmail } from "@/lib/auth";
@@ -39,14 +40,24 @@ export default async function CoursePage({ params }: CoursePageProps) {
     .order("created_at", { ascending: false });
 
   let myReview: DbReview | null = null;
+  let hasRequestedReview = false;
   if (user) {
-    const { data } = await supabase
-      .from("reviews")
-      .select("*")
-      .eq("course_id", course.id)
-      .eq("user_id", user.id)
-      .maybeSingle();
-    myReview = data;
+    const [myReviewResult, myRequestResult] = await Promise.all([
+      supabase
+        .from("reviews")
+        .select("*")
+        .eq("course_id", course.id)
+        .eq("user_id", user.id)
+        .maybeSingle(),
+      supabase
+        .from("review_requests")
+        .select("id")
+        .eq("course_id", course.id)
+        .eq("user_id", user.id)
+        .maybeSingle(),
+    ]);
+    myReview = myReviewResult.data;
+    hasRequestedReview = Boolean(myRequestResult.data);
   }
 
   const visibleReviews = reviews ?? [];
@@ -86,6 +97,15 @@ export default async function CoursePage({ params }: CoursePageProps) {
           <span>难度 {formatRating(course.avg_difficulty, course.review_count)}</span>
           <span>给分 {formatRating(course.avg_grading, course.review_count)}</span>
           <span>{course.review_count} 条评价</span>
+        </div>
+
+        <div className="mt-5">
+          <ReviewRequestButton
+            courseId={course.id}
+            isLoggedIn={isLoggedIn}
+            initialRequested={hasRequestedReview}
+            initialCount={course.request_count ?? 0}
+          />
         </div>
       </section>
 

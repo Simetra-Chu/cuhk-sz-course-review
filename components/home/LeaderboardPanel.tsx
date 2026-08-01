@@ -8,6 +8,7 @@ type LeaderboardPanelProps = {
   courses: DbCourse[];
   emptyMessage: string;
   hint?: string;
+  metric?: "reviews" | "requests";
 };
 
 export function LeaderboardPanel({
@@ -16,6 +17,7 @@ export function LeaderboardPanel({
   courses,
   emptyMessage,
   hint,
+  metric,
 }: LeaderboardPanelProps) {
   return (
     <div className="rounded-2xl border border-purple-100 bg-white p-6 shadow-sm">
@@ -36,6 +38,7 @@ export function LeaderboardPanel({
               course={course}
               rank={index + 1}
               compact
+              metric={metric}
             />
           ))}
         </div>

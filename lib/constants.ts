@@ -85,6 +85,9 @@ export const REVIEW_TAGS = [
 ] as const;
 
 export type ReviewTag = (typeof REVIEW_TAGS)[number];
+export const MAX_REVIEW_TAGS = 5;
+export const MIN_CUSTOM_TAG_LENGTH = 2;
+export const MAX_CUSTOM_TAG_LENGTH = 8;
 
 /** 评价正文最少字数（与数据库 check 一致） */
 export const MIN_REVIEW_CONTENT_LENGTH = 16;

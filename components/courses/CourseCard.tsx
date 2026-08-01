@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Star } from "lucide-react";
+import { MessageCircle, Star } from "lucide-react";
 import { formatRating, getSchoolName } from "@/lib/courses";
 import type { DbCourse } from "@/types/database";
 
@@ -7,9 +7,15 @@ type CourseCardProps = {
   course: DbCourse;
   rank?: number;
   compact?: boolean;
+  metric?: "reviews" | "requests";
 };
 
-export function CourseCard({ course, rank, compact }: CourseCardProps) {
+export function CourseCard({
+  course,
+  rank,
+  compact,
+  metric = "reviews",
+}: CourseCardProps) {
   return (
     <Link
       href={`/course/${course.code}`}
@@ -60,11 +66,23 @@ export function CourseCard({ course, rank, compact }: CourseCardProps) {
         )}
 
         <div className="mt-2 flex items-center gap-3 text-xs text-gray-600">
-          <span className="inline-flex items-center gap-1">
-            <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-            综合 {formatRating(course.avg_rating, course.review_count)}
-          </span>
-          <span>{course.review_count} 条评价</span>
+          {metric === "requests" ? (
+            <>
+              <span className="inline-flex items-center gap-1 text-purple-700">
+                <MessageCircle className="h-3.5 w-3.5" />
+                {course.request_count ?? 0} 人求评价
+              </span>
+              <span>{course.review_count} 条评价</span>
+            </>
+          ) : (
+            <>
+              <span className="inline-flex items-center gap-1">
+                <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                综合 {formatRating(course.avg_rating, course.review_count)}
+              </span>
+              <span>{course.review_count} 条评价</span>
+            </>
+          )}
         </div>
       </div>
     </Link>

@@ -1,7 +1,8 @@
-import { TrendingUp, Star } from "lucide-react";
+import { MessageCircle, TrendingUp, Star } from "lucide-react";
 import { CourseCard } from "@/components/courses/CourseCard";
 import { CourseCatalogBrowser } from "@/components/home/CourseCatalogBrowser";
 import { LeaderboardPanel } from "@/components/home/LeaderboardPanel";
+import { RecentReviewsFeed } from "@/components/home/RecentReviewsFeed";
 import { SchoolFilter } from "@/components/home/SchoolFilter";
 import { SearchForm } from "@/components/home/SearchForm";
 import {
@@ -11,11 +12,13 @@ import {
 import {
   getCourseCatalog,
   getHotCourses,
+  getMostRequestedCourses,
   getTopRatedCourses,
   parseSchoolParam,
   parseTermParam,
   searchCourses,
 } from "@/lib/courses";
+import { getRecentReviews } from "@/lib/review-queries";
 
 type HomeProps = {
   searchParams?: {
@@ -43,6 +46,8 @@ export default async function Home({ searchParams }: HomeProps) {
     catalogResult,
     topRatedResult,
     hotResult,
+    requestedResult,
+    recentReviewsResult,
   ] = await Promise.all([
     isFiltering
       ? searchCourses({
@@ -55,6 +60,8 @@ export default async function Home({ searchParams }: HomeProps) {
     getCourseCatalog(),
     getTopRatedCourses(),
     getHotCourses(),
+    getMostRequestedCourses(),
+    getRecentReviews(),
   ]);
 
   const searchError = searchResult.error?.message;
@@ -136,7 +143,7 @@ export default async function Home({ searchParams }: HomeProps) {
         </section>
       )}
 
-      <section className="mt-10 grid gap-4 md:grid-cols-2">
+      <section className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <LeaderboardPanel
           title="高分榜"
           icon={Star}
@@ -152,7 +159,18 @@ export default async function Home({ searchParams }: HomeProps) {
           hint="按评价数量排序"
           emptyMessage="还没有课程收到评价。成为第一个分享体验的人吧。"
         />
+
+        <LeaderboardPanel
+          title="求评价榜"
+          icon={MessageCircle}
+          courses={requestedResult.data ?? []}
+          metric="requests"
+          hint="按求评价人数排序，所有课程均可上榜"
+          emptyMessage="还没有人求评价。可以在课程详情页为关心的课程求评价。"
+        />
       </section>
+
+      <RecentReviewsFeed reviews={recentReviewsResult.data ?? []} />
     </div>
   );
 }

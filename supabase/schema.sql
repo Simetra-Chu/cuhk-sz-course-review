@@ -13,6 +13,35 @@ create type public.school_code as enum (
 
 create type public.review_status as enum ('visible', 'hidden');
 
+create or replace function public.valid_review_tags(p_tags text[])
+returns boolean
+language sql
+immutable
+set search_path = ''
+as $$
+  select
+    cardinality(coalesce(p_tags, '{}'::text[])) <= 5
+    and (
+      select count(*) = count(distinct tag)
+      from unnest(coalesce(p_tags, '{}'::text[])) as tag
+    )
+    and not exists (
+      select 1
+      from unnest(coalesce(p_tags, '{}'::text[])) as tag
+      where tag <> trim(tag)
+        or char_length(tag) < 2
+        or char_length(tag) > 8
+    )
+    and (
+      select count(*)
+      from unnest(coalesce(p_tags, '{}'::text[])) as tag
+      where tag <> all(array[
+        '给分慷慨', '给分严格', '作业适中', '作业量大',
+        '推荐', '避雷', '签到少', '点名频繁'
+      ]::text[])
+    ) <= 1;
+$$;
+
 -- 3. 课程表
 create table if not exists public.courses (
   id uuid primary key default gen_random_uuid(),
@@ -31,6 +60,7 @@ create table if not exists public.courses (
   avg_difficulty numeric(3, 2) not null default 0,
   avg_grading numeric(3, 2) not null default 0,
   review_count integer not null default 0,
+  request_count integer not null default 0 check (request_count >= 0),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -43,7 +73,7 @@ create table if not exists public.reviews (
   rating smallint not null check (rating between 1 and 5),
   difficulty smallint not null check (difficulty between 1 and 5),
   grading smallint not null check (grading between 1 and 5),
-  tags text[] not null default '{}',
+  tags text[] not null default '{}' check (public.valid_review_tags(tags)),
   content text not null check (char_length(trim(content)) > 15),
   status public.review_status not null default 'visible',
   report_count integer not null default 0,
@@ -62,12 +92,25 @@ create table if not exists public.reports (
   unique (review_id, user_id)
 );
 
+-- 6. 求评价表（每用户每课程仅一次）
+create table if not exists public.review_requests (
+  id uuid primary key default gen_random_uuid(),
+  course_id uuid not null references public.courses(id) on delete cascade,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  unique (course_id, user_id)
+);
+
 -- 6. 索引
 create index if not exists idx_courses_school on public.courses (school);
 create index if not exists idx_courses_code_trgm on public.courses using gin (code gin_trgm_ops);
 create index if not exists idx_courses_name_cn_trgm on public.courses using gin (name_cn gin_trgm_ops);
 create index if not exists idx_reviews_course_visible on public.reviews (course_id) where status = 'visible';
 create index if not exists idx_reviews_user on public.reviews (user_id);
+create index if not exists idx_reviews_recent_visible on public.reviews (created_at desc) where status = 'visible';
+create index if not exists idx_review_requests_course on public.review_requests (course_id);
+create index if not exists idx_review_requests_user on public.review_requests (user_id);
+create index if not exists idx_courses_request_count on public.courses (request_count desc);
 
 -- 7. 自动更新 updated_at
 create or replace function public.set_updated_at()
@@ -167,10 +210,51 @@ create trigger trg_reports_handle
 after insert on public.reports
 for each row execute function public.trg_handle_report();
 
+-- 10. 求评价变更时更新计数
+create or replace function public.refresh_course_request_count(p_course_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  update public.courses
+  set
+    request_count = (
+      select count(*)::integer
+      from public.review_requests
+      where course_id = p_course_id
+    ),
+    updated_at = now()
+  where id = p_course_id;
+end;
+$$;
+
+create or replace function public.trg_refresh_course_request_count()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  target_course_id uuid;
+begin
+  target_course_id := coalesce(new.course_id, old.course_id);
+  perform public.refresh_course_request_count(target_course_id);
+  return coalesce(new, old);
+end;
+$$;
+
+drop trigger if exists trg_review_requests_refresh_count on public.review_requests;
+create trigger trg_review_requests_refresh_count
+after insert or delete on public.review_requests
+for each row execute function public.trg_refresh_course_request_count();
+
 -- 10. 启用 RLS
 alter table public.courses enable row level security;
 alter table public.reviews enable row level security;
 alter table public.reports enable row level security;
+alter table public.review_requests enable row level security;
 
 -- 仅允许港中深校内邮箱执行写操作
 create or replace function public.is_school_email()
@@ -237,3 +321,21 @@ with check (
       and reviews.user_id <> auth.uid()
   )
 );
+
+drop policy if exists "review_requests_read_own" on public.review_requests;
+create policy "review_requests_read_own"
+on public.review_requests for select
+to authenticated
+using (auth.uid() = user_id);
+
+drop policy if exists "review_requests_insert_own" on public.review_requests;
+create policy "review_requests_insert_own"
+on public.review_requests for insert
+to authenticated
+with check (auth.uid() = user_id and public.is_school_email());
+
+drop policy if exists "review_requests_delete_own" on public.review_requests;
+create policy "review_requests_delete_own"
+on public.review_requests for delete
+to authenticated
+using (auth.uid() = user_id and public.is_school_email());

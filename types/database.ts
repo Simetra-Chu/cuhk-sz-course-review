@@ -19,6 +19,7 @@ export type DbCourse = {
   avg_difficulty: number;
   avg_grading: number;
   review_count: number;
+  request_count: number;
   created_at: string;
   updated_at: string;
 };
@@ -45,5 +46,13 @@ export type DbReport = {
   review_id: string;
   user_id: string;
   reason: string | null;
+  created_at: string;
+};
+
+/** 与 Supabase public.review_requests 表对应 */
+export type DbReviewRequest = {
+  id: string;
+  course_id: string;
+  user_id: string;
   created_at: string;
 };

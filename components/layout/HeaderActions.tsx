@@ -1,6 +1,7 @@
 "use client";
 
-import { Loader2, LogIn, LogOut } from "lucide-react";
+import { FileText, Loader2, LogIn, LogOut } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { LoginDialog } from "@/components/auth/LoginDialog";
@@ -30,6 +31,13 @@ export function HeaderActions({ email }: HeaderActionsProps) {
         <span className="hidden text-sm text-purple-800 sm:inline">
           {maskEmail(email)}
         </span>
+        <Link
+          href="/my-reviews"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-purple-800 transition hover:text-purple-950"
+        >
+          <FileText className="h-4 w-4" />
+          <span className="hidden sm:inline">我的评价</span>
+        </Link>
         <button
           type="button"
           onClick={handleSignOut}

@@ -110,6 +110,20 @@ export async function getHotCourses(limit = LEADERBOARD_LIMIT) {
   return { data: data as DbCourse[] | null, error };
 }
 
+export async function getMostRequestedCourses(limit = LEADERBOARD_LIMIT) {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("courses")
+    .select("*")
+    .gt("request_count", 0)
+    .order("request_count", { ascending: false })
+    .order("review_count", { ascending: true })
+    .order("code")
+    .limit(limit);
+
+  return { data: data as DbCourse[] | null, error };
+}
+
 export async function getCourseByCode(code: string) {
   const supabase = createClient();
   const normalizedCode = code.trim().toUpperCase();
