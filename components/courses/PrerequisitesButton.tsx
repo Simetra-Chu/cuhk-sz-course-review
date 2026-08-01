@@ -16,15 +16,17 @@ const COURSE_CODE_PATTERN = /\b[A-Z]{2,5}\d{4}[A-Z]?\b/g;
 function RequirementText({ value }: { value: string }) {
   const parts: Array<{ type: "text" | "code"; value: string }> = [];
   let lastIndex = 0;
-  const matches = value.matchAll(COURSE_CODE_PATTERN);
+  const pattern = new RegExp(COURSE_CODE_PATTERN.source, "g");
+  let match: RegExpExecArray | null = pattern.exec(value);
 
-  for (const match of matches) {
-    const index = match.index ?? 0;
+  while (match) {
+    const index = match.index;
     if (index > lastIndex) {
       parts.push({ type: "text", value: value.slice(lastIndex, index) });
     }
     parts.push({ type: "code", value: match[0] });
     lastIndex = index + match[0].length;
+    match = pattern.exec(value);
   }
   if (lastIndex < value.length) {
     parts.push({ type: "text", value: value.slice(lastIndex) });
