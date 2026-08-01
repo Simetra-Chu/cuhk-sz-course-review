@@ -7,6 +7,13 @@
 create extension if not exists pg_trgm;
 
 -- 2. 枚举类型
+create type public.feedback_category as enum (
+  'missing_course',
+  'bug',
+  'suggestion',
+  'other'
+);
+
 create type public.school_code as enum (
   'SSE', 'SME', 'SDS', 'HSS', 'MED', 'MUS', 'SAI', 'FE'
 );
@@ -104,6 +111,35 @@ create table if not exists public.review_requests (
   unique (course_id, user_id)
 );
 
+-- 7b. 用户反馈
+create table if not exists public.feedback (
+  id uuid primary key default gen_random_uuid(),
+  category public.feedback_category not null,
+  content text not null
+    check (
+      char_length(trim(content)) >= 10
+      and char_length(trim(content)) <= 2000
+    ),
+  course_code text
+    check (
+      course_code is null
+      or (
+        char_length(trim(course_code)) >= 2
+        and char_length(trim(course_code)) <= 20
+      )
+    ),
+  contact_email text
+    check (
+      contact_email is null
+      or (
+        char_length(trim(contact_email)) >= 5
+        and char_length(trim(contact_email)) <= 120
+      )
+    ),
+  user_id uuid references auth.users(id) on delete set null,
+  created_at timestamptz not null default now()
+);
+
 -- 7. 推荐教授专栏（仅推荐留言，不汇总票数）
 create table if not exists public.professor_recommendations (
   id uuid primary key default gen_random_uuid(),
@@ -142,6 +178,10 @@ on public.professor_recommendations (course_id, created_at desc)
 where status = 'visible';
 create index if not exists idx_prof_rec_user
 on public.professor_recommendations (user_id);
+create index if not exists idx_feedback_created_at
+on public.feedback (created_at desc);
+create index if not exists idx_feedback_category
+on public.feedback (category);
 
 -- 7. 自动更新 updated_at
 create or replace function public.set_updated_at()
@@ -292,6 +332,7 @@ alter table public.reviews enable row level security;
 alter table public.reports enable row level security;
 alter table public.review_requests enable row level security;
 alter table public.professor_recommendations enable row level security;
+alter table public.feedback enable row level security;
 
 -- 仅允许港中深校内邮箱执行写操作
 create or replace function public.is_school_email()
@@ -407,3 +448,18 @@ create policy "prof_rec_delete_own"
 on public.professor_recommendations for delete
 to authenticated
 using (auth.uid() = user_id and public.is_school_email());
+
+drop policy if exists "feedback_insert_public" on public.feedback;
+create policy "feedback_insert_public"
+on public.feedback for insert
+to anon, authenticated
+with check (
+  user_id is null
+  or auth.uid() = user_id
+);
+
+drop policy if exists "feedback_read_own" on public.feedback;
+create policy "feedback_read_own"
+on public.feedback for select
+to authenticated
+using (auth.uid() = user_id);

@@ -71,3 +71,14 @@ export type DbProfessorRecommendation = {
   created_at: string;
   updated_at: string;
 };
+
+/** 与 Supabase public.feedback 表对应 */
+export type DbFeedback = {
+  id: string;
+  category: "missing_course" | "bug" | "suggestion" | "other";
+  content: string;
+  course_code: string | null;
+  contact_email: string | null;
+  user_id: string | null;
+  created_at: string;
+};

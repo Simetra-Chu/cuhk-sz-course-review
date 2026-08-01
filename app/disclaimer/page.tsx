@@ -49,14 +49,14 @@ const sections = [
   {
     title: "隐私与数据使用",
     paragraphs: [
-      "平台会处理完成服务所必需的数据，包括校内邮箱、认证用户标识、登录会话、用户主动提交的评价与举报，以及由 Supabase、Vercel 等基础服务提供商为安全和运行维护产生的必要技术记录。",
+      "平台会处理完成服务所必需的数据，包括校内邮箱、认证用户标识、登录会话、用户主动提交的评价、举报与反馈，以及由 Supabase、Vercel 等基础服务提供商为安全和运行维护产生的必要技术记录。",
       "校内邮箱用于身份验证、安全控制和维护登录状态，不会在公开评价页面展示，也不会用于出售个人信息或发送商业广告。评价默认匿名展示，但匿名展示不等于技术上的绝对匿名。",
       "数据可能由提供认证、数据库和托管服务的基础设施供应商按照其隐私与安全规则处理。平台会采取合理措施保护数据，但互联网服务无法保证绝对安全。",
     ],
     bullets: [
       "公开展示：课程评分、标签、评价正文和发表时间；",
       "不公开展示：校内邮箱、认证用户标识及登录凭证；",
-      "用户权利：可以在课程页面修改或删除自己的评价；如需处理账号或其他数据问题，可通过项目 GitHub 仓库反馈。",
+      "用户权利：可以在课程页面修改或删除自己的评价；如需反馈缺课、使用问题或数据处理相关事项，可通过站内「用户反馈」页面或项目 GitHub 仓库联系。",
     ],
   },
   {
@@ -119,14 +119,21 @@ export default function DisclaimerPage() {
               )}
               {index === sections.length - 1 && (
                 <p className="mt-3 text-sm leading-7 text-gray-700">
-                  项目反馈：
+                  站内反馈：
+                  <Link
+                    href="/feedback"
+                    className="ml-1 text-purple-700 underline underline-offset-2 hover:text-purple-900"
+                  >
+                    用户反馈
+                  </Link>
+                  ；GitHub：
                   <a
                     href="https://github.com/Simetra-Chu/cuhk-sz-course-review"
                     target="_blank"
                     rel="noreferrer"
                     className="ml-1 text-purple-700 underline underline-offset-2 hover:text-purple-900"
                   >
-                    GitHub 仓库
+                    项目仓库
                   </a>
                 </p>
               )}

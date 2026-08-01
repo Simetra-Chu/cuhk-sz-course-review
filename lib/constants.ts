@@ -97,6 +97,18 @@ export const MIN_PROFESSOR_NAME_LENGTH = 2;
 export const MAX_PROFESSOR_NAME_LENGTH = 40;
 export const MIN_PROFESSOR_REC_CONTENT_LENGTH = 8;
 
+/** 用户反馈 */
+export const FEEDBACK_CATEGORIES = [
+  { value: "missing_course", label: "缺少课程" },
+  { value: "bug", label: "使用问题 / Bug" },
+  { value: "suggestion", label: "功能建议" },
+  { value: "other", label: "其他" },
+] as const;
+
+export type FeedbackCategory = (typeof FEEDBACK_CATEGORIES)[number]["value"];
+export const MIN_FEEDBACK_CONTENT_LENGTH = 10;
+export const MAX_FEEDBACK_CONTENT_LENGTH = 2000;
+
 /** 教务处「本科专业」索引页 */
 export const REGISTRY_MAJORS_URL = "http://registry.cuhk.edu.cn/page/20";
 
