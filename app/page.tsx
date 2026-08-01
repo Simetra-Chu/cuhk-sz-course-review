@@ -42,6 +42,10 @@ export default async function Home({ searchParams }: HomeProps) {
     term ? `学期 ${term}` : null,
   ].filter(Boolean);
 
+  const feedbackHref = query
+    ? `/feedback?course=${encodeURIComponent(query.toUpperCase())}`
+    : "/feedback";
+
   const [
     searchResult,
     catalogResult,
@@ -101,20 +105,6 @@ export default async function Home({ searchParams }: HomeProps) {
       </section>
 
       <section className="mt-8">
-        <h2 className="text-xl font-semibold text-purple-900">浏览课程目录</h2>
-        <p className="mt-1 text-sm text-gray-600">
-          先选择学科代码首字母，再展开学科查看课程。
-        </p>
-        {catalogResult.error ? (
-          <p className="mt-4 text-sm text-red-600">
-            课程目录加载失败：{catalogResult.error.message}
-          </p>
-        ) : (
-          <CourseCatalogBrowser courses={catalogResult.data ?? []} />
-        )}
-      </section>
-
-      <section className="mt-8">
         <h2 className="text-lg font-semibold text-purple-900">按学院筛选</h2>
         <SchoolFilter
           activeSchool={school}
@@ -138,9 +128,21 @@ export default async function Home({ searchParams }: HomeProps) {
           {searchError ? (
             <p className="mt-4 text-sm text-red-600">搜索失败：{searchError}</p>
           ) : courses.length === 0 ? (
-            <p className="mt-4 text-sm text-gray-600">
-              没有找到匹配的课程。试试换个关键词，或先去掉学院筛选。
-            </p>
+            <div className="mt-4 rounded-xl bg-purple-50/60 p-4">
+              <p className="text-sm text-gray-700">
+                没有找到匹配的课程。试试换个关键词，或先去掉学院筛选。
+              </p>
+              <p className="mt-2 text-sm text-gray-600">
+                也可能是目录里还没收录——欢迎反馈缺课。
+              </p>
+              <Link
+                href={feedbackHref}
+                className="mt-4 inline-flex items-center gap-2 rounded-full bg-purple-700 px-4 py-2 text-sm font-medium text-white transition hover:bg-purple-800"
+              >
+                <MessageSquarePlus className="h-4 w-4" />
+                反馈缺课
+              </Link>
+            </div>
           ) : (
             <div className="mt-4 divide-y divide-purple-50">
               {courses.map((course) => (
@@ -179,6 +181,20 @@ export default async function Home({ searchParams }: HomeProps) {
       </section>
 
       <RecentReviewsFeed reviews={recentReviewsResult.data ?? []} />
+
+      <section className="mt-10">
+        <h2 className="text-xl font-semibold text-purple-900">浏览课程目录</h2>
+        <p className="mt-1 text-sm text-gray-600">
+          先选择学科代码首字母，再展开学科查看课程。
+        </p>
+        {catalogResult.error ? (
+          <p className="mt-4 text-sm text-red-600">
+            课程目录加载失败：{catalogResult.error.message}
+          </p>
+        ) : (
+          <CourseCatalogBrowser courses={catalogResult.data ?? []} />
+        )}
+      </section>
     </div>
   );
 }

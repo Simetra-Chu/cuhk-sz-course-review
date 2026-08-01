@@ -202,9 +202,24 @@ export function ReviewForm({ courseId, existingReview }: ReviewFormProps) {
       </div>
 
       <div className="mt-6 grid gap-5 sm:grid-cols-3">
-        <ScoreInput label="综合评分" value={rating} onChange={setRating} />
-        <ScoreInput label="课程难度" value={difficulty} onChange={setDifficulty} />
-        <ScoreInput label="给分情况" value={grading} onChange={setGrading} />
+        <ScoreInput
+          label="综合评分"
+          value={rating}
+          onChange={setRating}
+          hint="1 很差 → 5 很好"
+        />
+        <ScoreInput
+          label="课程难度"
+          value={difficulty}
+          onChange={setDifficulty}
+          hint="1 轻松 → 5 很难"
+        />
+        <ScoreInput
+          label="给分情况"
+          value={grading}
+          onChange={setGrading}
+          hint="1 严格 → 5 慷慨"
+        />
       </div>
 
       <div className="mt-6">

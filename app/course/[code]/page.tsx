@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Star } from "lucide-react";
-import { PrerequisitesButton } from "@/components/courses/PrerequisitesButton";
+import { CourseTabs } from "@/components/courses/CourseTabs";
+import { PrerequisitesPanel } from "@/components/courses/PrerequisitesPanel";
 import { ProfessorRecommendationSection } from "@/components/courses/ProfessorRecommendationSection";
 import { ReviewRequestButton } from "@/components/courses/ReviewRequestButton";
 import { ReviewCard } from "@/components/reviews/ReviewCard";
@@ -110,18 +111,18 @@ export default async function CoursePage({ params }: CoursePageProps) {
             <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
             综合 {formatRating(course.avg_rating, course.review_count)}
           </span>
-          <span>难度 {formatRating(course.avg_difficulty, course.review_count)}</span>
-          <span>给分 {formatRating(course.avg_grading, course.review_count)}</span>
+          <span>
+            难度 {formatRating(course.avg_difficulty, course.review_count)}
+            <span className="ml-1 text-xs text-gray-400">（高=难）</span>
+          </span>
+          <span>
+            给分 {formatRating(course.avg_grading, course.review_count)}
+            <span className="ml-1 text-xs text-gray-400">（高=慷慨）</span>
+          </span>
           <span>{course.review_count} 条评价</span>
         </div>
 
-        <div className="mt-5 flex flex-wrap items-center gap-3">
-          <PrerequisitesButton
-            courseCode={course.code}
-            prerequisite={course.prerequisite}
-            corequisite={course.corequisite}
-            exclusion={course.exclusion}
-          />
+        <div className="mt-5">
           <ReviewRequestButton
             courseId={course.id}
             isLoggedIn={isLoggedIn}
@@ -131,45 +132,85 @@ export default async function CoursePage({ params }: CoursePageProps) {
         </div>
       </section>
 
-      <ProfessorRecommendationSection
-        courseId={course.id}
-        isLoggedIn={isLoggedIn}
-        currentUserId={user?.id}
-        initialItems={recommendations}
-      />
-
-      <section className="mt-8 space-y-4">
-        {isLoggedIn ? (
-          <ReviewForm courseId={course.id} existingReview={myReview} />
-        ) : (
-          <div className="rounded-2xl border border-dashed border-purple-200 bg-purple-50/40 p-6 text-sm text-purple-900">
-            登录后可发表评价。Phase 6 登录功能已写好，可在右上角使用校内邮箱登录。
-          </div>
-        )}
-
-        <div>
-          <h2 className="text-lg font-semibold text-purple-900">
-            全部评价 ({visibleReviews.length})
-          </h2>
-
-          {visibleReviews.length === 0 ? (
-            <p className="mt-4 rounded-2xl border border-purple-100 bg-white p-6 text-sm text-gray-600">
-              还没有评价，成为第一个分享体验的人吧。
-            </p>
-          ) : (
-            <div className="mt-4 space-y-4">
-              {visibleReviews.map((review) => (
-                <ReviewCard
-                  key={review.id}
-                  review={review}
-                  canReport={isLoggedIn}
-                  isOwn={user?.id === review.user_id}
-                />
-              ))}
+      <CourseTabs
+        reviewCount={visibleReviews.length}
+        recommendationCount={recommendations.length}
+        reviews={
+          <div className="space-y-4">
+            <div id="write-review">
+              {isLoggedIn ? (
+                <ReviewForm courseId={course.id} existingReview={myReview} />
+              ) : (
+                <div className="rounded-2xl border border-dashed border-purple-200 bg-purple-50/40 p-6 text-sm text-purple-900">
+                  登录后可发表评价。请使用右上角校内邮箱登录。
+                </div>
+              )}
             </div>
-          )}
-        </div>
-      </section>
+
+            <div>
+              <h2 className="text-lg font-semibold text-purple-900">
+                全部评价 ({visibleReviews.length})
+              </h2>
+
+              {visibleReviews.length === 0 ? (
+                <div className="mt-4 rounded-2xl border border-purple-100 bg-white p-6">
+                  <p className="text-sm text-gray-600">
+                    还没有评价。可以求评价催一催，或自己写第一条。
+                  </p>
+                  <div className="mt-4 flex flex-wrap items-center gap-3">
+                    <ReviewRequestButton
+                      courseId={course.id}
+                      isLoggedIn={isLoggedIn}
+                      initialRequested={hasRequestedReview}
+                      initialCount={course.request_count ?? 0}
+                    />
+                    {isLoggedIn ? (
+                      <a
+                        href="#write-review"
+                        className="inline-flex items-center rounded-xl bg-purple-700 px-4 py-2 text-sm font-medium text-white transition hover:bg-purple-800"
+                      >
+                        我来写第一条
+                      </a>
+                    ) : (
+                      <p className="text-xs text-gray-500">
+                        登录后即可在上方发表评价
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="mt-4 space-y-4">
+                  {visibleReviews.map((review) => (
+                    <ReviewCard
+                      key={review.id}
+                      review={review}
+                      canReport={isLoggedIn}
+                      isOwn={user?.id === review.user_id}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        }
+        professors={
+          <ProfessorRecommendationSection
+            courseId={course.id}
+            isLoggedIn={isLoggedIn}
+            currentUserId={user?.id}
+            initialItems={recommendations}
+            embedded
+          />
+        }
+        prerequisites={
+          <PrerequisitesPanel
+            courseCode={course.code}
+            prerequisite={course.prerequisite}
+            corequisite={course.corequisite}
+            exclusion={course.exclusion}
+          />
+        }
+      />
     </div>
   );
 }

@@ -17,6 +17,7 @@ type ProfessorRecommendationSectionProps = {
   isLoggedIn: boolean;
   currentUserId?: string | null;
   initialItems: DbProfessorRecommendation[];
+  embedded?: boolean;
 };
 
 export function ProfessorRecommendationSection({
@@ -24,6 +25,7 @@ export function ProfessorRecommendationSection({
   isLoggedIn,
   currentUserId,
   initialItems,
+  embedded = false,
 }: ProfessorRecommendationSectionProps) {
   const router = useRouter();
   const [professorName, setProfessorName] = useState("");
@@ -118,10 +120,12 @@ export function ProfessorRecommendationSection({
   }
 
   return (
-    <section className="mt-8 space-y-4">
+    <section className={embedded ? "space-y-4" : "mt-8 space-y-4"}>
       <div>
-        <h2 className="text-lg font-semibold text-purple-900">推荐教授</h2>
-        <p className="mt-1 text-sm text-gray-600">
+        {!embedded && (
+          <h2 className="text-lg font-semibold text-purple-900">推荐教授</h2>
+        )}
+        <p className={`text-sm text-gray-600 ${embedded ? "" : "mt-1"}`}>
           分享你愿意推荐的授课老师与理由。匿名展示，不做票数汇总，仅供参考。
         </p>
       </div>
