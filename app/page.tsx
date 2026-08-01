@@ -105,6 +105,20 @@ export default async function Home({ searchParams }: HomeProps) {
       </section>
 
       <section className="mt-8">
+        <h2 className="text-xl font-semibold text-purple-900">浏览课程目录</h2>
+        <p className="mt-1 text-sm text-gray-600">
+          先选择学科代码首字母，再展开学科查看课程。
+        </p>
+        {catalogResult.error ? (
+          <p className="mt-4 text-sm text-red-600">
+            课程目录加载失败：{catalogResult.error.message}
+          </p>
+        ) : (
+          <CourseCatalogBrowser courses={catalogResult.data ?? []} />
+        )}
+      </section>
+
+      <section className="mt-8">
         <h2 className="text-lg font-semibold text-purple-900">按学院筛选</h2>
         <SchoolFilter
           activeSchool={school}
@@ -181,20 +195,6 @@ export default async function Home({ searchParams }: HomeProps) {
       </section>
 
       <RecentReviewsFeed reviews={recentReviewsResult.data ?? []} />
-
-      <section className="mt-10">
-        <h2 className="text-xl font-semibold text-purple-900">浏览课程目录</h2>
-        <p className="mt-1 text-sm text-gray-600">
-          先选择学科代码首字母，再展开学科查看课程。
-        </p>
-        {catalogResult.error ? (
-          <p className="mt-4 text-sm text-red-600">
-            课程目录加载失败：{catalogResult.error.message}
-          </p>
-        ) : (
-          <CourseCatalogBrowser courses={catalogResult.data ?? []} />
-        )}
-      </section>
     </div>
   );
 }
