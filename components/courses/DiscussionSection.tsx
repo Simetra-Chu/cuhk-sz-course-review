@@ -117,7 +117,7 @@ export function DiscussionSection({
       return;
     }
     setContent("");
-    setMessage("已发布到讨论区。");
+    setMessage("评论已发布。");
   }
 
   async function handleReplySubmit(event: React.FormEvent, parentId: string) {
@@ -311,7 +311,7 @@ export function DiscussionSection({
     <div className="space-y-4">
       <div>
         <p className="text-sm text-gray-600">
-          把对这门课的疑问、想了解的考点 / 作业 / 给分等信息发在这里；也可以回复别人的帖子。匿名展示。
+          只写评论即可，不必先打分；打分请到上方评价区。也可回复别人。匿名展示。
         </p>
       </div>
 
@@ -321,7 +321,7 @@ export function DiscussionSection({
           className="rounded-2xl border border-purple-100 bg-white p-5 shadow-sm"
         >
           <label className="block text-sm font-medium text-purple-900">
-            发起讨论
+            发表评论
             <textarea
               value={content}
               onChange={(event) => setContent(event.target.value)}
@@ -344,19 +344,19 @@ export function DiscussionSection({
             className="mt-4 inline-flex items-center gap-2 rounded-xl bg-purple-700 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-purple-800 disabled:opacity-60"
           >
             {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-            发布
+            发布评论
           </button>
         </form>
       ) : (
         <div className="rounded-2xl border border-dashed border-purple-200 bg-purple-50/40 p-5 text-sm text-purple-900">
-          登录后可在讨论区提问、回复或分享想了解的内容。
+          登录后可评论或回复；与上方打分互不影响。
         </div>
       )}
 
       <div className="space-y-3">
-        <h2 className="text-lg font-semibold text-purple-900">
-          全部讨论 ({roots.length})
-        </h2>
+        <h3 className="text-lg font-semibold text-purple-900">
+          全部评论 ({roots.length})
+        </h3>
 
         {roots.length === 0 ? (
           <p className="rounded-2xl border border-purple-100 bg-white p-5 text-sm text-gray-600">

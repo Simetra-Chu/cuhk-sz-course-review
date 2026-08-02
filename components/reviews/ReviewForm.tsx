@@ -33,7 +33,6 @@ export function ReviewForm({ courseId, existingReview }: ReviewFormProps) {
   const [tags, setTags] = useState<string[]>(existingReview?.tags ?? []);
   const [customTagDraft, setCustomTagDraft] = useState("");
   const [showCustomTagInput, setShowCustomTagInput] = useState(false);
-  const [content, setContent] = useState(existingReview?.content ?? "");
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -109,7 +108,6 @@ export function ReviewForm({ courseId, existingReview }: ReviewFormProps) {
     const validationError = validateReviewForm({
       ...scoredPayload,
       tags,
-      content,
     });
 
     if (validationError) {
@@ -129,23 +127,24 @@ export function ReviewForm({ courseId, existingReview }: ReviewFormProps) {
       return;
     }
 
-    const payload = {
+    // 评价区只负责打分/标签；文字留言请到下方评论区
+    const scoreAndTags = {
       ...scoredPayload,
       tags: normalizeReviewTags(tags),
-      content: content.trim(),
     };
 
     const result = existingReview
       ? await supabase
           .from("reviews")
-          .update(payload)
+          .update(scoreAndTags)
           .eq("id", existingReview.id)
           .select("id")
           .single()
       : await supabase
           .from("reviews")
           .insert({
-            ...payload,
+            ...scoreAndTags,
+            content: "",
             course_id: courseId,
             user_id: user.id,
           })
@@ -198,7 +197,6 @@ export function ReviewForm({ courseId, existingReview }: ReviewFormProps) {
     setTags([]);
     setCustomTagDraft("");
     setShowCustomTagInput(false);
-    setContent("");
     router.refresh();
   }
 
@@ -207,40 +205,37 @@ export function ReviewForm({ courseId, existingReview }: ReviewFormProps) {
       onSubmit={handleSubmit}
       className="rounded-2xl border border-purple-100 bg-white p-6 shadow-sm"
     >
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold text-purple-900">
-          {existingReview ? "修改我的评价" : "发表评价"}
-        </h2>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-semibold text-purple-900">
+            {existingReview ? "修改我的打分" : "打分"}
+          </h2>
+          <p className="mt-1 text-xs text-gray-500">
+            只打分即可；想写文字请到下方评论区，二者互不影响
+          </p>
+        </div>
         <span className="text-xs text-gray-500">匿名展示</span>
       </div>
 
-      <div className="mt-6 rounded-2xl border border-purple-50 bg-purple-50/40 p-4">
-        <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <p className="text-sm font-medium text-purple-900">评分（可选）</p>
-          <p className="text-xs text-gray-500">
-            可只写文字评价；不评分会显示「未评分」
-          </p>
-        </div>
-        <div className="mt-4 grid gap-5 sm:grid-cols-3">
-          <ScoreInput
-            label="综合评分"
-            value={rating}
-            onChange={setRating}
-            hint="1 很差 → 5 很好"
-          />
-          <ScoreInput
-            label="课程难度"
-            value={difficulty}
-            onChange={setDifficulty}
-            hint="1 轻松 → 5 很难"
-          />
-          <ScoreInput
-            label="给分情况"
-            value={grading}
-            onChange={setGrading}
-            hint="1 严格 → 5 慷慨"
-          />
-        </div>
+      <div className="mt-6 grid gap-5 sm:grid-cols-3">
+        <ScoreInput
+          label="综合评分"
+          value={rating}
+          onChange={setRating}
+          hint="1 很差 → 5 很好"
+        />
+        <ScoreInput
+          label="课程难度"
+          value={difficulty}
+          onChange={setDifficulty}
+          hint="1 轻松 → 5 很难"
+        />
+        <ScoreInput
+          label="给分情况"
+          value={grading}
+          onChange={setGrading}
+          hint="1 严格 → 5 慷慨"
+        />
       </div>
 
       <div className="mt-6">
@@ -335,27 +330,6 @@ export function ReviewForm({ courseId, existingReview }: ReviewFormProps) {
         </p>
       </div>
 
-      <div className="mt-6">
-        <label
-          htmlFor="review-content"
-          className="text-sm font-medium text-purple-900"
-        >
-          评价正文
-        </label>
-        <p className="mt-1 text-xs text-gray-500">与评分分离，必填</p>
-        <textarea
-          id="review-content"
-          value={content}
-          onChange={(event) => setContent(event.target.value)}
-          rows={5}
-          placeholder="分享你的真实体验，至少 16 个字。评分可选；请勿发布人身攻击或泄露隐私的内容。"
-          className="mt-2 w-full rounded-xl border border-gray-200 px-4 py-3 outline-none ring-purple-200 focus:ring-2"
-        />
-        <p className="mt-2 text-xs text-gray-500">
-          已输入 {content.trim().length} 字
-        </p>
-      </div>
-
       {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
       {message && (
         <p className="mt-4 text-sm text-green-700">{message}</p>
@@ -368,7 +342,7 @@ export function ReviewForm({ courseId, existingReview }: ReviewFormProps) {
           className="inline-flex items-center gap-2 rounded-xl bg-purple-700 px-5 py-3 text-sm font-medium text-white transition hover:bg-purple-800 disabled:opacity-60"
         >
           {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-          {existingReview ? "保存修改" : "发表评价"}
+          {existingReview ? "保存打分" : "提交打分"}
         </button>
 
         {existingReview && (

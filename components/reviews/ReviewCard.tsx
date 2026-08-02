@@ -81,9 +81,11 @@ export function ReviewCard({
         </div>
       )}
 
-      <p className="mt-4 whitespace-pre-wrap text-sm leading-7 text-gray-800">
-        {review.content}
-      </p>
+      {review.content.trim() ? (
+        <p className="mt-4 whitespace-pre-wrap text-sm leading-7 text-gray-800">
+          {review.content}
+        </p>
+      ) : null}
 
       <div className="mt-4">
         <LikeButton

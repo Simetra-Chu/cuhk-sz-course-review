@@ -3,7 +3,6 @@ import {
   MAX_CUSTOM_TAG_LENGTH,
   MAX_REVIEW_TAGS,
   MIN_CUSTOM_TAG_LENGTH,
-  MIN_REVIEW_CONTENT_LENGTH,
   REVIEW_TAGS,
 } from "@/lib/constants";
 
@@ -12,7 +11,6 @@ export type ReviewFormValues = {
   difficulty: number | null;
   grading: number | null;
   tags: string[];
-  content: string;
 };
 
 export type ReviewScoreFields = {
@@ -63,6 +61,10 @@ export function validateReviewForm(values: ReviewFormValues) {
     return "给分评分需为 1-5 星，或不评分";
   }
 
+  if (!hasAnyScore(values)) {
+    return "请至少选择一项评分（综合 / 难度 / 给分）";
+  }
+
   const tags = normalizeReviewTags(values.tags);
   if (tags.length > MAX_REVIEW_TAGS) {
     return `每条评价最多选择 ${MAX_REVIEW_TAGS} 个标签`;
@@ -83,11 +85,6 @@ export function validateReviewForm(values: ReviewFormValues) {
     )
   ) {
     return `自定义标签需为 ${MIN_CUSTOM_TAG_LENGTH}–${MAX_CUSTOM_TAG_LENGTH} 个字`;
-  }
-
-  const content = values.content.trim();
-  if (content.length <= MIN_REVIEW_CONTENT_LENGTH - 1) {
-    return `评价正文至少 ${MIN_REVIEW_CONTENT_LENGTH} 个字`;
   }
 
   return null;

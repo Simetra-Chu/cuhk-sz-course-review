@@ -196,15 +196,15 @@ export default async function CoursePage({ params }: CoursePageProps) {
                 <ReviewForm courseId={course.id} existingReview={myReview} />
               ) : (
                 <div className="rounded-2xl border border-dashed border-purple-200 bg-purple-50/40 p-6 text-sm text-purple-900">
-                  登录后可发表评价。请使用右上角校内邮箱登录。
+                  登录后可打分。想写文字请到下方评论区，二者互不影响。
                 </div>
               )}
             </div>
 
             <div>
-              <h2 className="text-lg font-semibold text-purple-900">
+              <h3 className="text-lg font-semibold text-purple-900">
                 全部评价 ({reviews.length})
-              </h2>
+              </h3>
 
               {reviews.length === 0 ? (
                 <div className="mt-4 rounded-2xl border border-purple-100 bg-white p-6">

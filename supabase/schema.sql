@@ -86,7 +86,11 @@ create table if not exists public.reviews (
   difficulty smallint check (difficulty is null or difficulty between 1 and 5),
   grading smallint check (grading is null or grading between 1 and 5),
   tags text[] not null default '{}' check (public.valid_review_tags(tags)),
-  content text not null check (char_length(trim(content)) > 15),
+  content text not null default ''
+    check (
+      char_length(trim(content)) = 0
+      or char_length(trim(content)) > 15
+    ),
   status public.review_status not null default 'visible',
   report_count integer not null default 0,
   like_count integer not null default 0 check (like_count >= 0),

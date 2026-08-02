@@ -72,9 +72,11 @@ export function RecentReviewsFeed({ reviews }: RecentReviewsFeedProps) {
                 </div>
               )}
 
-              <p className="mt-3 line-clamp-3 whitespace-pre-wrap text-sm leading-6 text-gray-700">
-                {review.content}
-              </p>
+              {review.content.trim() ? (
+                <p className="mt-3 line-clamp-3 whitespace-pre-wrap text-sm leading-6 text-gray-700">
+                  {review.content}
+                </p>
+              ) : null}
               <Link
                 href={`/course/${review.course.code}`}
                 className="mt-3 inline-flex text-xs font-medium text-purple-700 hover:underline"
