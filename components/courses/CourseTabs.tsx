@@ -2,26 +2,31 @@
 
 import { useState, type ReactNode } from "react";
 
-type TabId = "reviews" | "professors" | "prerequisites";
+type TabId = "reviews" | "discussions" | "professors" | "prerequisites";
 
 type CourseTabsProps = {
   reviewCount: number;
+  discussionCount: number;
   recommendationCount: number;
   reviews: ReactNode;
+  discussions: ReactNode;
   professors: ReactNode;
   prerequisites: ReactNode;
 };
 
-const TABS: Array<{ id: TabId; label: string; count?: number }> = [
+const TABS: Array<{ id: TabId; label: string }> = [
   { id: "reviews", label: "评价" },
+  { id: "discussions", label: "讨论" },
   { id: "professors", label: "推荐教授" },
   { id: "prerequisites", label: "先修" },
 ];
 
 export function CourseTabs({
   reviewCount,
+  discussionCount,
   recommendationCount,
   reviews,
+  discussions,
   professors,
   prerequisites,
 }: CourseTabsProps) {
@@ -29,6 +34,7 @@ export function CourseTabs({
 
   function tabLabel(item: (typeof TABS)[number]) {
     if (item.id === "reviews") return `${item.label} (${reviewCount})`;
+    if (item.id === "discussions") return `${item.label} (${discussionCount})`;
     if (item.id === "professors") {
       return `${item.label} (${recommendationCount})`;
     }
@@ -65,6 +71,7 @@ export function CourseTabs({
 
       <div role="tabpanel" className="mt-6">
         {tab === "reviews" && reviews}
+        {tab === "discussions" && discussions}
         {tab === "professors" && professors}
         {tab === "prerequisites" && prerequisites}
       </div>

@@ -1,4 +1,5 @@
 import { Star } from "lucide-react";
+import { LikeButton } from "@/components/common/LikeButton";
 import { ReportButton } from "@/components/reviews/ReportButton";
 import { formatReviewDate } from "@/lib/reviews";
 import type { DbReview } from "@/types/database";
@@ -7,6 +8,8 @@ type ReviewCardProps = {
   review: DbReview;
   canReport: boolean;
   isOwn: boolean;
+  isLoggedIn?: boolean;
+  initialLiked?: boolean;
 };
 
 function ScoreBadge({ label, value }: { label: string; value: number }) {
@@ -17,7 +20,13 @@ function ScoreBadge({ label, value }: { label: string; value: number }) {
   );
 }
 
-export function ReviewCard({ review, canReport, isOwn }: ReviewCardProps) {
+export function ReviewCard({
+  review,
+  canReport,
+  isOwn,
+  isLoggedIn = false,
+  initialLiked = false,
+}: ReviewCardProps) {
   return (
     <article className="rounded-2xl border border-purple-100 bg-white p-5 shadow-sm">
       <div className="flex items-start justify-between gap-4">
@@ -62,6 +71,16 @@ export function ReviewCard({ review, canReport, isOwn }: ReviewCardProps) {
       <p className="mt-4 whitespace-pre-wrap text-sm leading-7 text-gray-800">
         {review.content}
       </p>
+
+      <div className="mt-4">
+        <LikeButton
+          targetType="review"
+          targetId={review.id}
+          initialCount={review.like_count ?? 0}
+          initialLiked={initialLiked}
+          isLoggedIn={isLoggedIn}
+        />
+      </div>
     </article>
   );
 }

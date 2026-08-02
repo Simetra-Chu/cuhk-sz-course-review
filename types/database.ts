@@ -27,6 +27,8 @@ export type DbCourse = {
   updated_at: string;
 };
 
+export type LikeTargetType = "review" | "discussion_post";
+
 /** 与 Supabase public.reviews 表对应 */
 export type DbReview = {
   id: string;
@@ -39,8 +41,30 @@ export type DbReview = {
   content: string;
   status: "visible" | "hidden";
   report_count: number;
+  like_count: number;
   created_at: string;
   updated_at: string;
+};
+
+/** 与 Supabase public.discussion_posts 表对应 */
+export type DbDiscussionPost = {
+  id: string;
+  course_id: string;
+  user_id: string;
+  content: string;
+  status: "visible" | "hidden";
+  like_count: number;
+  created_at: string;
+  updated_at: string;
+};
+
+/** 与 Supabase public.content_likes 表对应 */
+export type DbContentLike = {
+  id: string;
+  user_id: string;
+  target_type: LikeTargetType;
+  target_id: string;
+  created_at: string;
 };
 
 /** 与 Supabase public.reports 表对应 */

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Star } from "lucide-react";
 import { CourseTabs } from "@/components/courses/CourseTabs";
+import { DiscussionSection } from "@/components/courses/DiscussionSection";
 import { PrerequisitesPanel } from "@/components/courses/PrerequisitesPanel";
 import { ProfessorRecommendationSection } from "@/components/courses/ProfessorRecommendationSection";
 import { ReviewRequestButton } from "@/components/courses/ReviewRequestButton";
@@ -14,7 +15,11 @@ import {
   getSchoolName,
 } from "@/lib/courses";
 import { createClient } from "@/lib/supabase/server";
-import type { DbProfessorRecommendation, DbReview } from "@/types/database";
+import type {
+  DbDiscussionPost,
+  DbProfessorRecommendation,
+  DbReview,
+} from "@/types/database";
 
 type CoursePageProps = {
   params: {
@@ -36,48 +41,85 @@ export default async function CoursePage({ params }: CoursePageProps) {
 
   const isLoggedIn = Boolean(user?.email && isAllowedEmail(user.email));
 
-  const [reviewsResult, professorRecsResult] = await Promise.all([
-    supabase
-      .from("reviews")
-      .select("*")
-      .eq("course_id", course.id)
-      .order("created_at", { ascending: false }),
-    supabase
-      .from("professor_recommendations")
-      .select("*")
-      .eq("course_id", course.id)
-      .eq("status", "visible")
-      .order("created_at", { ascending: false }),
-  ]);
-  const reviews = reviewsResult.data;
-  const professorRecs = professorRecsResult.error
-    ? []
-    : professorRecsResult.data;
-
-  let myReview: DbReview | null = null;
-  let hasRequestedReview = false;
-  if (user) {
-    const [myReviewResult, myRequestResult] = await Promise.all([
+  const [reviewsResult, professorRecsResult, discussionsResult] =
+    await Promise.all([
       supabase
         .from("reviews")
         .select("*")
         .eq("course_id", course.id)
-        .eq("user_id", user.id)
-        .maybeSingle(),
+        .order("created_at", { ascending: false }),
       supabase
-        .from("review_requests")
-        .select("id")
+        .from("professor_recommendations")
+        .select("*")
         .eq("course_id", course.id)
-        .eq("user_id", user.id)
-        .maybeSingle(),
+        .eq("status", "visible")
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("discussion_posts")
+        .select("*")
+        .eq("course_id", course.id)
+        .eq("status", "visible")
+        .order("created_at", { ascending: false }),
     ]);
-    myReview = myReviewResult.data;
-    hasRequestedReview = Boolean(myRequestResult.data);
-  }
 
-  const visibleReviews = reviews ?? [];
-  const recommendations = (professorRecs ??
-    []) as DbProfessorRecommendation[];
+  const reviews = (reviewsResult.data ?? []) as DbReview[];
+  const professorRecs = professorRecsResult.error
+    ? []
+    : ((professorRecsResult.data ?? []) as DbProfessorRecommendation[]);
+  const discussions = discussionsResult.error
+    ? []
+    : ((discussionsResult.data ?? []) as DbDiscussionPost[]);
+
+  let myReview: DbReview | null = null;
+  let hasRequestedReview = false;
+  let likedReviewIds = new Set<string>();
+  let likedDiscussionIds = new Set<string>();
+
+  if (user) {
+    const reviewIds = reviews.map((item) => item.id);
+    const discussionIds = discussions.map((item) => item.id);
+
+    const [myReviewResult, myRequestResult, reviewLikesResult, discLikesResult] =
+      await Promise.all([
+        supabase
+          .from("reviews")
+          .select("*")
+          .eq("course_id", course.id)
+          .eq("user_id", user.id)
+          .maybeSingle(),
+        supabase
+          .from("review_requests")
+          .select("id")
+          .eq("course_id", course.id)
+          .eq("user_id", user.id)
+          .maybeSingle(),
+        reviewIds.length > 0
+          ? supabase
+              .from("content_likes")
+              .select("target_id")
+              .eq("user_id", user.id)
+              .eq("target_type", "review")
+              .in("target_id", reviewIds)
+          : Promise.resolve({ data: [] as { target_id: string }[] }),
+        discussionIds.length > 0
+          ? supabase
+              .from("content_likes")
+              .select("target_id")
+              .eq("user_id", user.id)
+              .eq("target_type", "discussion_post")
+              .in("target_id", discussionIds)
+          : Promise.resolve({ data: [] as { target_id: string }[] }),
+      ]);
+
+    myReview = myReviewResult.data as DbReview | null;
+    hasRequestedReview = Boolean(myRequestResult.data);
+    likedReviewIds = new Set(
+      (reviewLikesResult.data ?? []).map((row) => row.target_id)
+    );
+    likedDiscussionIds = new Set(
+      (discLikesResult.data ?? []).map((row) => row.target_id)
+    );
+  }
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-10">
@@ -133,8 +175,9 @@ export default async function CoursePage({ params }: CoursePageProps) {
       </section>
 
       <CourseTabs
-        reviewCount={visibleReviews.length}
-        recommendationCount={recommendations.length}
+        reviewCount={reviews.length}
+        discussionCount={discussions.length}
+        recommendationCount={professorRecs.length}
         reviews={
           <div className="space-y-4">
             <div id="write-review">
@@ -149,10 +192,10 @@ export default async function CoursePage({ params }: CoursePageProps) {
 
             <div>
               <h2 className="text-lg font-semibold text-purple-900">
-                全部评价 ({visibleReviews.length})
+                全部评价 ({reviews.length})
               </h2>
 
-              {visibleReviews.length === 0 ? (
+              {reviews.length === 0 ? (
                 <div className="mt-4 rounded-2xl border border-purple-100 bg-white p-6">
                   <p className="text-sm text-gray-600">
                     还没有评价。可以求评价催一催，或自己写第一条。
@@ -180,12 +223,14 @@ export default async function CoursePage({ params }: CoursePageProps) {
                 </div>
               ) : (
                 <div className="mt-4 space-y-4">
-                  {visibleReviews.map((review) => (
+                  {reviews.map((review) => (
                     <ReviewCard
                       key={review.id}
                       review={review}
                       canReport={isLoggedIn}
                       isOwn={user?.id === review.user_id}
+                      isLoggedIn={isLoggedIn}
+                      initialLiked={likedReviewIds.has(review.id)}
                     />
                   ))}
                 </div>
@@ -193,12 +238,21 @@ export default async function CoursePage({ params }: CoursePageProps) {
             </div>
           </div>
         }
+        discussions={
+          <DiscussionSection
+            courseId={course.id}
+            isLoggedIn={isLoggedIn}
+            currentUserId={user?.id}
+            initialPosts={discussions}
+            likedPostIds={Array.from(likedDiscussionIds)}
+          />
+        }
         professors={
           <ProfessorRecommendationSection
             courseId={course.id}
             isLoggedIn={isLoggedIn}
             currentUserId={user?.id}
-            initialItems={recommendations}
+            initialItems={professorRecs}
             embedded
           />
         }

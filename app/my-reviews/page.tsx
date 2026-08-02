@@ -111,7 +111,12 @@ export default async function MyReviewsPage() {
                   <ExternalLink className="h-3.5 w-3.5" />
                 </Link>
               </div>
-              <ReviewCard review={review} canReport={false} isOwn />
+              <ReviewCard
+                review={review}
+                canReport={false}
+                isOwn
+                isLoggedIn
+              />
             </section>
           ))}
         </div>
