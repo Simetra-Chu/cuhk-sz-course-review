@@ -41,10 +41,8 @@ export function CourseTabs({
     <section className="mt-8 space-y-10">
       <div id="course-reviews">
         <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
-          <h2 className="text-xl font-semibold text-purple-950">
-            评价区（打分）
-          </h2>
-          <p className="text-sm text-gray-500">{reviewCount} 条打分</p>
+          <h2 className="text-xl font-semibold text-purple-950">评价区</h2>
+          <p className="text-sm text-gray-500">{reviewCount} 条评价</p>
         </div>
         {reviews}
       </div>

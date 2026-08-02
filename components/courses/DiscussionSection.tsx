@@ -310,9 +310,7 @@ export function DiscussionSection({
   return (
     <div className="space-y-4">
       <div>
-        <p className="text-sm text-gray-600">
-          只写评论即可，不必先打分；打分请到上方评价区。也可回复别人。匿名展示。
-        </p>
+        <p className="text-sm text-gray-600">匿名展示</p>
       </div>
 
       {isLoggedIn ? (
@@ -349,7 +347,7 @@ export function DiscussionSection({
         </form>
       ) : (
         <div className="rounded-2xl border border-dashed border-purple-200 bg-purple-50/40 p-5 text-sm text-purple-900">
-          登录后可评论或回复；与上方打分互不影响。
+          登录后可发表评论或回复。
         </div>
       )}
 

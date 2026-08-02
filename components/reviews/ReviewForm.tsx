@@ -205,15 +205,10 @@ export function ReviewForm({ courseId, existingReview }: ReviewFormProps) {
       onSubmit={handleSubmit}
       className="rounded-2xl border border-purple-100 bg-white p-6 shadow-sm"
     >
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h2 className="text-lg font-semibold text-purple-900">
-            {existingReview ? "修改我的打分" : "打分"}
-          </h2>
-          <p className="mt-1 text-xs text-gray-500">
-            只打分即可；想写文字请到下方评论区，二者互不影响
-          </p>
-        </div>
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-lg font-semibold text-purple-900">
+          {existingReview ? "修改我的评价" : "发表评价"}
+        </h2>
         <span className="text-xs text-gray-500">匿名展示</span>
       </div>
 
@@ -342,7 +337,7 @@ export function ReviewForm({ courseId, existingReview }: ReviewFormProps) {
           className="inline-flex items-center gap-2 rounded-xl bg-purple-700 px-5 py-3 text-sm font-medium text-white transition hover:bg-purple-800 disabled:opacity-60"
         >
           {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-          {existingReview ? "保存打分" : "提交打分"}
+          {existingReview ? "保存修改" : "发表评价"}
         </button>
 
         {existingReview && (
