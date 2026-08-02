@@ -2,11 +2,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Star } from "lucide-react";
 import { CourseTabs } from "@/components/courses/CourseTabs";
+import { CourseMixedFeed } from "@/components/courses/CourseMixedFeed";
 import { DiscussionSection } from "@/components/courses/DiscussionSection";
 import { PrerequisitesPanel } from "@/components/courses/PrerequisitesPanel";
 import { ProfessorRecommendationSection } from "@/components/courses/ProfessorRecommendationSection";
 import { ReviewRequestButton } from "@/components/courses/ReviewRequestButton";
-import { ReviewCard } from "@/components/reviews/ReviewCard";
 import { ReviewForm } from "@/components/reviews/ReviewForm";
 import { isAllowedEmail } from "@/lib/auth";
 import {
@@ -190,74 +190,18 @@ export default async function CoursePage({ params }: CoursePageProps) {
         discussionCount={discussions.filter((post) => !post.parent_id).length}
         recommendationCount={professorRecs.length}
         reviews={
-          <div className="space-y-4">
-            <div id="write-review">
-              {isLoggedIn ? (
-                <ReviewForm courseId={course.id} existingReview={myReview} />
-              ) : (
-                <div className="rounded-2xl border border-dashed border-purple-200 bg-purple-50/40 p-6 text-sm text-purple-900">
-                  登录后可发表评价。请使用右上角校内邮箱登录。
-                </div>
-              )}
-            </div>
-
-            <div>
-              <h3 className="text-lg font-semibold text-purple-900">
-                全部评价 ({reviews.length})
-              </h3>
-
-              {reviews.length === 0 ? (
-                <div className="mt-4 rounded-2xl border border-purple-100 bg-white p-6">
-                  <p className="text-sm text-gray-600">
-                    还没有评价。可以求评价催一催，或自己写第一条。
-                  </p>
-                  <div className="mt-4 flex flex-wrap items-center gap-3">
-                    <ReviewRequestButton
-                      courseId={course.id}
-                      isLoggedIn={isLoggedIn}
-                      initialRequested={hasRequestedReview}
-                      initialCount={course.request_count ?? 0}
-                    />
-                    {isLoggedIn ? (
-                      <a
-                        href="#write-review"
-                        className="inline-flex items-center rounded-xl bg-purple-700 px-4 py-2 text-sm font-medium text-white transition hover:bg-purple-800"
-                      >
-                        我来写第一条
-                      </a>
-                    ) : (
-                      <p className="text-xs text-gray-500">
-                        登录后即可在上方发表评价
-                      </p>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <div className="mt-4 space-y-4">
-                  {reviews.map((review) => (
-                    <ReviewCard
-                      key={review.id}
-                      review={review}
-                      canReport={isLoggedIn}
-                      isOwn={user?.id === review.user_id}
-                      isLoggedIn={isLoggedIn}
-                      initialLiked={likedReviewIds.has(review.id)}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
+          <div id="write-review">
+            {isLoggedIn ? (
+              <ReviewForm courseId={course.id} existingReview={myReview} />
+            ) : (
+              <div className="rounded-2xl border border-dashed border-purple-200 bg-purple-50/40 p-6 text-sm text-purple-900">
+                登录后可发表评价。请使用右上角校内邮箱登录。
+              </div>
+            )}
           </div>
         }
         discussions={
-          <DiscussionSection
-            courseId={course.id}
-            isLoggedIn={isLoggedIn}
-            currentUserId={user?.id}
-            initialPosts={discussions}
-            likedPostIds={Array.from(likedDiscussionIds)}
-            authorScoresByUserId={authorScoresByUserId}
-          />
+          <DiscussionSection courseId={course.id} isLoggedIn={isLoggedIn} />
         }
         professors={
           <ProfessorRecommendationSection
@@ -274,6 +218,37 @@ export default async function CoursePage({ params }: CoursePageProps) {
             prerequisite={course.prerequisite}
             corequisite={course.corequisite}
             exclusion={course.exclusion}
+          />
+        }
+        feed={
+          <CourseMixedFeed
+            courseId={course.id}
+            isLoggedIn={isLoggedIn}
+            currentUserId={user?.id}
+            reviews={reviews}
+            posts={discussions}
+            likedReviewIds={Array.from(likedReviewIds)}
+            likedPostIds={Array.from(likedDiscussionIds)}
+            authorScoresByUserId={authorScoresByUserId}
+            canReport={isLoggedIn}
+            emptyAction={
+              <div className="flex flex-wrap items-center gap-3">
+                <ReviewRequestButton
+                  courseId={course.id}
+                  isLoggedIn={isLoggedIn}
+                  initialRequested={hasRequestedReview}
+                  initialCount={course.request_count ?? 0}
+                />
+                {isLoggedIn ? (
+                  <a
+                    href="#write-review"
+                    className="inline-flex items-center rounded-xl bg-purple-700 px-4 py-2 text-sm font-medium text-white transition hover:bg-purple-800"
+                  >
+                    去评价区打分
+                  </a>
+                ) : null}
+              </div>
+            }
           />
         }
       />

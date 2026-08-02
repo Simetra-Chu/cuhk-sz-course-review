@@ -12,6 +12,7 @@ type CourseTabsProps = {
   discussions: ReactNode;
   professors: ReactNode;
   prerequisites: ReactNode;
+  feed: ReactNode;
 };
 
 const EXTRA_TABS: Array<{ id: ExtraTabId; label: string }> = [
@@ -27,6 +28,7 @@ export function CourseTabs({
   discussions,
   professors,
   prerequisites,
+  feed,
 }: CourseTabsProps) {
   const [extraTab, setExtraTab] = useState<ExtraTabId>("professors");
 
@@ -49,9 +51,7 @@ export function CourseTabs({
 
       <div id="course-comments">
         <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
-          <h2 className="text-xl font-semibold text-purple-950">
-            评论区
-          </h2>
+          <h2 className="text-xl font-semibold text-purple-950">评论区</h2>
           <p className="text-sm text-gray-500">{discussionCount} 条评论</p>
         </div>
         {discussions}
@@ -87,6 +87,8 @@ export function CourseTabs({
           {extraTab === "professors" ? professors : prerequisites}
         </div>
       </div>
+
+      {feed}
     </section>
   );
 }
