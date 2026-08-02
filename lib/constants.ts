@@ -111,7 +111,7 @@ export const MIN_FEEDBACK_CONTENT_LENGTH = 10;
 export const MAX_FEEDBACK_CONTENT_LENGTH = 2000;
 
 /** 课程讨论帖 */
-export const MIN_DISCUSSION_CONTENT_LENGTH = 8;
+export const MIN_DISCUSSION_CONTENT_LENGTH = 1;
 export const MAX_DISCUSSION_CONTENT_LENGTH = 1000;
 
 /** 教务处「本科专业」索引页 */

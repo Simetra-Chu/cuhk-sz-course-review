@@ -151,7 +151,7 @@ create table if not exists public.discussion_posts (
   parent_id uuid references public.discussion_posts(id) on delete cascade,
   content text not null
     check (
-      char_length(trim(content)) >= 8
+      char_length(trim(content)) >= 1
       and char_length(trim(content)) <= 1000
     ),
   status public.review_status not null default 'visible',
