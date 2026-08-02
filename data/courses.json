@@ -12682,6 +12682,7 @@
     "source": "registry",
     "source_url": null,
     "offered_terms": [
+      "AY2025-26 Term 2",
       "AY2026-27 Term 1"
     ],
     "prerequisite": "ENG2002T; ENG2002K; ENG2002M",
@@ -12700,6 +12701,7 @@
     "source": "registry",
     "source_url": null,
     "offered_terms": [
+      "AY2025-26 Term 2",
       "AY2026-27 Term 1"
     ],
     "prerequisite": null,
@@ -12718,6 +12720,7 @@
     "source": "registry",
     "source_url": null,
     "offered_terms": [
+      "AY2025-26 Term 2",
       "AY2026-27 Term 1"
     ],
     "prerequisite": null,
@@ -12736,6 +12739,7 @@
     "source": "registry",
     "source_url": null,
     "offered_terms": [
+      "AY2025-26 Term 2",
       "AY2026-27 Term 1"
     ],
     "prerequisite": null,
@@ -12754,6 +12758,7 @@
     "source": "registry",
     "source_url": null,
     "offered_terms": [
+      "AY2025-26 Term 2",
       "AY2026-27 Term 1"
     ],
     "prerequisite": null,
@@ -12772,6 +12777,7 @@
     "source": "registry",
     "source_url": null,
     "offered_terms": [
+      "AY2025-26 Term 2",
       "AY2026-27 Term 1"
     ],
     "prerequisite": null,
@@ -12790,6 +12796,7 @@
     "source": "registry",
     "source_url": null,
     "offered_terms": [
+      "AY2025-26 Term 2",
       "AY2026-27 Term 1"
     ],
     "prerequisite": null,
@@ -12808,6 +12815,7 @@
     "source": "registry",
     "source_url": null,
     "offered_terms": [
+      "AY2025-26 Term 2",
       "AY2026-27 Term 1"
     ],
     "prerequisite": null,
@@ -12826,6 +12834,7 @@
     "source": "registry",
     "source_url": null,
     "offered_terms": [
+      "AY2025-26 Term 2",
       "AY2026-27 Term 1"
     ],
     "prerequisite": null,
@@ -12844,6 +12853,7 @@
     "source": "registry",
     "source_url": null,
     "offered_terms": [
+      "AY2025-26 Term 2",
       "AY2026-27 Term 1"
     ],
     "prerequisite": null,
@@ -12862,6 +12872,7 @@
     "source": "registry",
     "source_url": null,
     "offered_terms": [
+      "AY2025-26 Term 2",
       "AY2026-27 Term 1"
     ],
     "prerequisite": null,
@@ -12880,6 +12891,7 @@
     "source": "registry",
     "source_url": null,
     "offered_terms": [
+      "AY2025-26 Term 2",
       "AY2026-27 Term 1"
     ],
     "prerequisite": null,
@@ -12916,6 +12928,7 @@
     "source": "registry",
     "source_url": null,
     "offered_terms": [
+      "AY2025-26 Term 2",
       "AY2026-27 Term 1"
     ],
     "prerequisite": null,
@@ -12952,118 +12965,11 @@
     "source": "registry",
     "source_url": null,
     "offered_terms": [
+      "AY2025-26 Term 2",
       "AY2026-27 Term 1"
     ],
     "prerequisite": null,
     "corequisite": null,
-    "exclusion": null,
-    "last_synced_at": "2026-08-01T13:39:08.618Z",
-    "mapping_reason": "pdf-department"
-  },
-  {
-    "code": "PED1201",
-    "name_cn": "Badminton",
-    "name_en": "Badminton",
-    "school": "HSS",
-    "subject_code": "PED",
-    "subject_name": "PED",
-    "source": "registry",
-    "source_url": null,
-    "offered_terms": [
-      "AY2025-26 Term 2"
-    ],
-    "prerequisite": null,
-    "corequisite": "PED1002 or PED2004 or PED1101",
-    "exclusion": null,
-    "last_synced_at": "2026-08-01T13:39:08.618Z",
-    "mapping_reason": "pdf-department"
-  },
-  {
-    "code": "PED1202",
-    "name_cn": "Barre Training",
-    "name_en": "Barre Training",
-    "school": "HSS",
-    "subject_code": "PED",
-    "subject_name": "PED",
-    "source": "registry",
-    "source_url": null,
-    "offered_terms": [
-      "AY2025-26 Term 2"
-    ],
-    "prerequisite": null,
-    "corequisite": "PED1002 or PED1102",
-    "exclusion": null,
-    "last_synced_at": "2026-08-01T13:39:08.618Z",
-    "mapping_reason": "pdf-department"
-  },
-  {
-    "code": "PED1203",
-    "name_cn": "Basketball",
-    "name_en": "Basketball",
-    "school": "HSS",
-    "subject_code": "PED",
-    "subject_name": "PED",
-    "source": "registry",
-    "source_url": null,
-    "offered_terms": [
-      "AY2025-26 Term 2"
-    ],
-    "prerequisite": null,
-    "corequisite": "PED1002 or PED2006 or PED1103",
-    "exclusion": null,
-    "last_synced_at": "2026-08-01T13:39:08.618Z",
-    "mapping_reason": "pdf-department"
-  },
-  {
-    "code": "PED1204",
-    "name_cn": "Floor Curling",
-    "name_en": "Floor Curling",
-    "school": "HSS",
-    "subject_code": "PED",
-    "subject_name": "PED",
-    "source": "registry",
-    "source_url": null,
-    "offered_terms": [
-      "AY2025-26 Term 2"
-    ],
-    "prerequisite": null,
-    "corequisite": "PED1002 or PED1104",
-    "exclusion": null,
-    "last_synced_at": "2026-08-01T13:39:08.618Z",
-    "mapping_reason": "pdf-department"
-  },
-  {
-    "code": "PED1205",
-    "name_cn": "Frisbee",
-    "name_en": "Frisbee",
-    "school": "HSS",
-    "subject_code": "PED",
-    "subject_name": "PED",
-    "source": "registry",
-    "source_url": null,
-    "offered_terms": [
-      "AY2025-26 Term 2"
-    ],
-    "prerequisite": null,
-    "corequisite": "PED1002 or PED1105",
-    "exclusion": null,
-    "last_synced_at": "2026-08-01T13:39:08.618Z",
-    "mapping_reason": "pdf-department"
-  },
-  {
-    "code": "PED1206",
-    "name_cn": "Golf",
-    "name_en": "Golf",
-    "school": "HSS",
-    "subject_code": "PED",
-    "subject_name": "PED",
-    "source": "registry",
-    "source_url": null,
-    "offered_terms": [
-      "AY2025-26 Term 2"
-    ],
-    "prerequisite": null,
-    "corequisite": "PED1002 or PED2002 or PED1106",
     "exclusion": null,
     "last_synced_at": "2026-08-01T13:39:08.618Z",
     "mapping_reason": "pdf-department"
@@ -13082,60 +12988,6 @@
     ],
     "prerequisite": null,
     "corequisite": "PED1002 or PED1108",
-    "exclusion": null,
-    "last_synced_at": "2026-08-01T13:39:08.618Z",
-    "mapping_reason": "pdf-department"
-  },
-  {
-    "code": "PED1209",
-    "name_cn": "Orienteering",
-    "name_en": "Orienteering",
-    "school": "HSS",
-    "subject_code": "PED",
-    "subject_name": "PED",
-    "source": "registry",
-    "source_url": null,
-    "offered_terms": [
-      "AY2025-26 Term 2"
-    ],
-    "prerequisite": null,
-    "corequisite": "PED1002 or PED1109",
-    "exclusion": null,
-    "last_synced_at": "2026-08-01T13:39:08.618Z",
-    "mapping_reason": "pdf-department"
-  },
-  {
-    "code": "PED1210",
-    "name_cn": "Pickleball",
-    "name_en": "Pickleball",
-    "school": "HSS",
-    "subject_code": "PED",
-    "subject_name": "PED",
-    "source": "registry",
-    "source_url": null,
-    "offered_terms": [
-      "AY2025-26 Term 2"
-    ],
-    "prerequisite": null,
-    "corequisite": "PED1002 or PED1110",
-    "exclusion": null,
-    "last_synced_at": "2026-08-01T13:39:08.618Z",
-    "mapping_reason": "pdf-department"
-  },
-  {
-    "code": "PED1213",
-    "name_cn": "Soccer",
-    "name_en": "Soccer",
-    "school": "HSS",
-    "subject_code": "PED",
-    "subject_name": "PED",
-    "source": "registry",
-    "source_url": null,
-    "offered_terms": [
-      "AY2025-26 Term 2"
-    ],
-    "prerequisite": null,
-    "corequisite": "PED1002 or PED1113",
     "exclusion": null,
     "last_synced_at": "2026-08-01T13:39:08.618Z",
     "mapping_reason": "pdf-department"
@@ -13172,96 +13024,6 @@
     ],
     "prerequisite": null,
     "corequisite": "PED1002 or PED1115",
-    "exclusion": null,
-    "last_synced_at": "2026-08-01T13:39:08.618Z",
-    "mapping_reason": "pdf-department"
-  },
-  {
-    "code": "PED1216",
-    "name_cn": "Table Tennis",
-    "name_en": "Table Tennis",
-    "school": "HSS",
-    "subject_code": "PED",
-    "subject_name": "PED",
-    "source": "registry",
-    "source_url": null,
-    "offered_terms": [
-      "AY2025-26 Term 2"
-    ],
-    "prerequisite": null,
-    "corequisite": "PED1002 or PED1116",
-    "exclusion": null,
-    "last_synced_at": "2026-08-01T13:39:08.618Z",
-    "mapping_reason": "pdf-department"
-  },
-  {
-    "code": "PED1217",
-    "name_cn": "Taekwondo",
-    "name_en": "Taekwondo",
-    "school": "HSS",
-    "subject_code": "PED",
-    "subject_name": "PED",
-    "source": "registry",
-    "source_url": null,
-    "offered_terms": [
-      "AY2025-26 Term 2"
-    ],
-    "prerequisite": null,
-    "corequisite": "PED1002 or PED1117",
-    "exclusion": null,
-    "last_synced_at": "2026-08-01T13:39:08.618Z",
-    "mapping_reason": "pdf-department"
-  },
-  {
-    "code": "PED1218",
-    "name_cn": "Tai Chi",
-    "name_en": "Tai Chi",
-    "school": "HSS",
-    "subject_code": "PED",
-    "subject_name": "PED",
-    "source": "registry",
-    "source_url": null,
-    "offered_terms": [
-      "AY2025-26 Term 2"
-    ],
-    "prerequisite": null,
-    "corequisite": "PED1002 or PED1118",
-    "exclusion": null,
-    "last_synced_at": "2026-08-01T13:39:08.618Z",
-    "mapping_reason": "pdf-department"
-  },
-  {
-    "code": "PED1221",
-    "name_cn": "Volleyball",
-    "name_en": "Volleyball",
-    "school": "HSS",
-    "subject_code": "PED",
-    "subject_name": "PED",
-    "source": "registry",
-    "source_url": null,
-    "offered_terms": [
-      "AY2025-26 Term 2"
-    ],
-    "prerequisite": null,
-    "corequisite": "PED1002 or PED2003 or PED1221",
-    "exclusion": null,
-    "last_synced_at": "2026-08-01T13:39:08.618Z",
-    "mapping_reason": "pdf-department"
-  },
-  {
-    "code": "PED1223",
-    "name_cn": "Yoga",
-    "name_en": "Yoga",
-    "school": "HSS",
-    "subject_code": "PED",
-    "subject_name": "PED",
-    "source": "registry",
-    "source_url": null,
-    "offered_terms": [
-      "AY2025-26 Term 2"
-    ],
-    "prerequisite": null,
-    "corequisite": "PED1002 or PED1123",
     "exclusion": null,
     "last_synced_at": "2026-08-01T13:39:08.618Z",
     "mapping_reason": "pdf-department"

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Clock, Star } from "lucide-react";
 import type { ReviewWithCourse } from "@/lib/review-queries";
-import { formatReviewDate } from "@/lib/reviews";
+import { formatReviewDate, formatScoreLabel } from "@/lib/reviews";
 
 type RecentReviewsFeedProps = {
   reviews: ReviewWithCourse[];
@@ -53,10 +53,10 @@ export function RecentReviewsFeed({ reviews }: RecentReviewsFeedProps) {
               <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-gray-600">
                 <span className="inline-flex items-center gap-1">
                   <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                  综合 {review.rating}/5
+                  综合 {formatScoreLabel(review.rating)}
                 </span>
-                <span>难度 {review.difficulty}/5</span>
-                <span>给分 {review.grading}/5</span>
+                <span>难度 {formatScoreLabel(review.difficulty)}</span>
+                <span>给分 {formatScoreLabel(review.grading)}</span>
               </div>
 
               {review.tags.length > 0 && (

@@ -8,9 +8,14 @@ import {
   MAX_DISCUSSION_CONTENT_LENGTH,
   MIN_DISCUSSION_CONTENT_LENGTH,
 } from "@/lib/constants";
-import { formatReviewDate } from "@/lib/reviews";
+import { formatReviewDate, formatScoreLabel } from "@/lib/reviews";
 import { createClient } from "@/lib/supabase/client";
-import type { DbDiscussionPost } from "@/types/database";
+import type { DbDiscussionPost, DbReview } from "@/types/database";
+
+export type AuthorCourseScores = Pick<
+  DbReview,
+  "rating" | "difficulty" | "grading"
+>;
 
 type DiscussionSectionProps = {
   courseId: string;
@@ -18,6 +23,8 @@ type DiscussionSectionProps = {
   currentUserId?: string | null;
   initialPosts: DbDiscussionPost[];
   likedPostIds: string[];
+  /** 该课上各用户评价中的评分，用于在讨论/回复旁展示 */
+  authorScoresByUserId?: Record<string, AuthorCourseScores>;
 };
 
 export function DiscussionSection({
@@ -26,6 +33,7 @@ export function DiscussionSection({
   currentUserId,
   initialPosts,
   likedPostIds,
+  authorScoresByUserId = {},
 }: DiscussionSectionProps) {
   const router = useRouter();
   const [content, setContent] = useState("");
@@ -161,6 +169,7 @@ export function DiscussionSection({
     const isOwn = currentUserId === post.user_id;
     const isReply = Boolean(options.isReply);
     const replies = repliesByParent.get(post.id) ?? [];
+    const scores = authorScoresByUserId[post.user_id];
 
     return (
       <article
@@ -172,17 +181,30 @@ export function DiscussionSection({
         }`}
       >
         <div className="flex items-start justify-between gap-3">
-          <p className="text-xs text-gray-500">
-            匿名同学 ·{" "}
-            <time dateTime={post.created_at}>
-              {formatReviewDate(post.created_at)}
-            </time>
-            {isOwn && (
-              <span className="ml-2 rounded-full bg-purple-100 px-2 py-0.5 text-xs text-purple-800">
-                {isReply ? "我的回复" : "我的帖子"}
+          <div>
+            <p className="text-xs text-gray-500">
+              匿名同学 ·{" "}
+              <time dateTime={post.created_at}>
+                {formatReviewDate(post.created_at)}
+              </time>
+              {isOwn && (
+                <span className="ml-2 rounded-full bg-purple-100 px-2 py-0.5 text-xs text-purple-800">
+                  {isReply ? "我的回复" : "我的帖子"}
+                </span>
+              )}
+            </p>
+            <div className="mt-2 flex flex-wrap gap-1.5 text-[11px]">
+              <span className="rounded-full bg-purple-50 px-2 py-0.5 text-purple-800">
+                综合 {formatScoreLabel(scores?.rating)}
               </span>
-            )}
-          </p>
+              <span className="rounded-full bg-purple-50 px-2 py-0.5 text-purple-800">
+                难度 {formatScoreLabel(scores?.difficulty)}
+              </span>
+              <span className="rounded-full bg-purple-50 px-2 py-0.5 text-purple-800">
+                给分 {formatScoreLabel(scores?.grading)}
+              </span>
+            </div>
+          </div>
           {isOwn && (
             <button
               type="button"

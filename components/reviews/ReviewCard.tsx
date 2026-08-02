@@ -1,7 +1,7 @@
 import { Star } from "lucide-react";
 import { LikeButton } from "@/components/common/LikeButton";
 import { ReportButton } from "@/components/reviews/ReportButton";
-import { formatReviewDate } from "@/lib/reviews";
+import { formatReviewDate, formatScoreLabel } from "@/lib/reviews";
 import type { DbReview } from "@/types/database";
 
 type ReviewCardProps = {
@@ -12,10 +12,23 @@ type ReviewCardProps = {
   initialLiked?: boolean;
 };
 
-function ScoreBadge({ label, value }: { label: string; value: number }) {
+function ScoreBadge({
+  label,
+  value,
+}: {
+  label: string;
+  value: number | null;
+}) {
+  const scored = value != null && value >= 1;
   return (
-    <span className="rounded-full bg-purple-50 px-2.5 py-1 text-xs text-purple-800">
-      {label} {value}/5
+    <span
+      className={`rounded-full px-2.5 py-1 text-xs ${
+        scored
+          ? "bg-purple-50 text-purple-800"
+          : "bg-gray-50 text-gray-500"
+      }`}
+    >
+      {label} {formatScoreLabel(value)}
     </span>
   );
 }

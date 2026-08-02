@@ -34,9 +34,9 @@ export type DbReview = {
   id: string;
   course_id: string;
   user_id: string;
-  rating: number;
-  difficulty: number;
-  grading: number;
+  rating: number | null;
+  difficulty: number | null;
+  grading: number | null;
   tags: string[];
   content: string;
   status: "visible" | "hidden";

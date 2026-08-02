@@ -70,6 +70,17 @@ export default async function CoursePage({ params }: CoursePageProps) {
     ? []
     : ((discussionsResult.data ?? []) as DbDiscussionPost[]);
 
+  const authorScoresByUserId = Object.fromEntries(
+    reviews.map((review) => [
+      review.user_id,
+      {
+        rating: review.rating,
+        difficulty: review.difficulty,
+        grading: review.grading,
+      },
+    ])
+  );
+
   let myReview: DbReview | null = null;
   let hasRequestedReview = false;
   let likedReviewIds = new Set<string>();
@@ -245,6 +256,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
             currentUserId={user?.id}
             initialPosts={discussions}
             likedPostIds={Array.from(likedDiscussionIds)}
+            authorScoresByUserId={authorScoresByUserId}
           />
         }
         professors={

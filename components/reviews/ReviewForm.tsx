@@ -13,6 +13,7 @@ import {
 } from "@/lib/constants";
 import {
   isPresetReviewTag,
+  normalizeOptionalScore,
   normalizeReviewTags,
   validateReviewForm,
 } from "@/lib/reviews";
@@ -99,10 +100,14 @@ export function ReviewForm({ courseId, existingReview }: ReviewFormProps) {
     setError(null);
     setMessage(null);
 
+    const scoredPayload = {
+      rating: normalizeOptionalScore(rating),
+      difficulty: normalizeOptionalScore(difficulty),
+      grading: normalizeOptionalScore(grading),
+    };
+
     const validationError = validateReviewForm({
-      rating,
-      difficulty,
-      grading,
+      ...scoredPayload,
       tags,
       content,
     });
@@ -125,9 +130,7 @@ export function ReviewForm({ courseId, existingReview }: ReviewFormProps) {
     }
 
     const payload = {
-      rating,
-      difficulty,
-      grading,
+      ...scoredPayload,
       tags: normalizeReviewTags(tags),
       content: content.trim(),
     };
@@ -211,25 +214,33 @@ export function ReviewForm({ courseId, existingReview }: ReviewFormProps) {
         <span className="text-xs text-gray-500">匿名展示</span>
       </div>
 
-      <div className="mt-6 grid gap-5 sm:grid-cols-3">
-        <ScoreInput
-          label="综合评分"
-          value={rating}
-          onChange={setRating}
-          hint="1 很差 → 5 很好"
-        />
-        <ScoreInput
-          label="课程难度"
-          value={difficulty}
-          onChange={setDifficulty}
-          hint="1 轻松 → 5 很难"
-        />
-        <ScoreInput
-          label="给分情况"
-          value={grading}
-          onChange={setGrading}
-          hint="1 严格 → 5 慷慨"
-        />
+      <div className="mt-6 rounded-2xl border border-purple-50 bg-purple-50/40 p-4">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <p className="text-sm font-medium text-purple-900">评分（可选）</p>
+          <p className="text-xs text-gray-500">
+            可只写文字评价；不评分会显示「未评分」
+          </p>
+        </div>
+        <div className="mt-4 grid gap-5 sm:grid-cols-3">
+          <ScoreInput
+            label="综合评分"
+            value={rating}
+            onChange={setRating}
+            hint="1 很差 → 5 很好"
+          />
+          <ScoreInput
+            label="课程难度"
+            value={difficulty}
+            onChange={setDifficulty}
+            hint="1 轻松 → 5 很难"
+          />
+          <ScoreInput
+            label="给分情况"
+            value={grading}
+            onChange={setGrading}
+            hint="1 严格 → 5 慷慨"
+          />
+        </div>
       </div>
 
       <div className="mt-6">
@@ -331,12 +342,13 @@ export function ReviewForm({ courseId, existingReview }: ReviewFormProps) {
         >
           评价正文
         </label>
+        <p className="mt-1 text-xs text-gray-500">与评分分离，必填</p>
         <textarea
           id="review-content"
           value={content}
           onChange={(event) => setContent(event.target.value)}
           rows={5}
-          placeholder="分享你的真实体验，至少 16 个字。请勿发布人身攻击或泄露隐私的内容。"
+          placeholder="分享你的真实体验，至少 16 个字。评分可选；请勿发布人身攻击或泄露隐私的内容。"
           className="mt-2 w-full rounded-xl border border-gray-200 px-4 py-3 outline-none ring-purple-200 focus:ring-2"
         />
         <p className="mt-2 text-xs text-gray-500">

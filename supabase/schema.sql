@@ -82,9 +82,9 @@ create table if not exists public.reviews (
   id uuid primary key default gen_random_uuid(),
   course_id uuid not null references public.courses(id) on delete cascade,
   user_id uuid not null references auth.users(id) on delete cascade,
-  rating smallint not null check (rating between 1 and 5),
-  difficulty smallint not null check (difficulty between 1 and 5),
-  grading smallint not null check (grading between 1 and 5),
+  rating smallint check (rating is null or rating between 1 and 5),
+  difficulty smallint check (difficulty is null or difficulty between 1 and 5),
+  grading smallint check (grading is null or grading between 1 and 5),
   tags text[] not null default '{}' check (public.valid_review_tags(tags)),
   content text not null check (char_length(trim(content)) > 15),
   status public.review_status not null default 'visible',
@@ -353,9 +353,9 @@ begin
     updated_at = now()
   from (
     select
-      round(avg(rating)::numeric, 2) as avg_rating,
-      round(avg(difficulty)::numeric, 2) as avg_difficulty,
-      round(avg(grading)::numeric, 2) as avg_grading,
+      round(avg(rating) filter (where rating is not null)::numeric, 2) as avg_rating,
+      round(avg(difficulty) filter (where difficulty is not null)::numeric, 2) as avg_difficulty,
+      round(avg(grading) filter (where grading is not null)::numeric, 2) as avg_grading,
       count(*)::integer as review_count
     from public.reviews
     where course_id = p_course_id

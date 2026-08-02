@@ -44,6 +44,7 @@ export function getSchoolName(code: SchoolCode) {
 
 export function formatRating(value: number, reviewCount: number) {
   if (reviewCount === 0) return "暂无";
+  if (!value || value <= 0) return "未评分";
   return value.toFixed(1);
 }
 

@@ -8,11 +8,17 @@ import {
 } from "@/lib/constants";
 
 export type ReviewFormValues = {
-  rating: number;
-  difficulty: number;
-  grading: number;
+  rating: number | null;
+  difficulty: number | null;
+  grading: number | null;
   tags: string[];
   content: string;
+};
+
+export type ReviewScoreFields = {
+  rating: number | null;
+  difficulty: number | null;
+  grading: number | null;
 };
 
 export function normalizeReviewTags(tags: string[]) {
@@ -23,17 +29,38 @@ export function isPresetReviewTag(tag: string) {
   return REVIEW_TAGS.some((preset) => preset === tag);
 }
 
+function isOptionalScore(value: number | null) {
+  return value === null || (value >= 1 && value <= 5);
+}
+
+export function formatScoreLabel(value: number | null | undefined) {
+  if (value == null || value < 1) return "未评分";
+  return `${value}/5`;
+}
+
+export function hasAnyScore(scores: ReviewScoreFields) {
+  return (
+    (scores.rating != null && scores.rating >= 1) ||
+    (scores.difficulty != null && scores.difficulty >= 1) ||
+    (scores.grading != null && scores.grading >= 1)
+  );
+}
+
+export function normalizeOptionalScore(value: number) {
+  return value >= 1 && value <= 5 ? value : null;
+}
+
 export function validateReviewForm(values: ReviewFormValues) {
-  if (values.rating < 1 || values.rating > 5) {
-    return "请选择综合评分（1-5 星）";
+  if (!isOptionalScore(values.rating)) {
+    return "综合评分需为 1-5 星，或不评分";
   }
 
-  if (values.difficulty < 1 || values.difficulty > 5) {
-    return "请选择难度评分（1-5 星）";
+  if (!isOptionalScore(values.difficulty)) {
+    return "难度评分需为 1-5 星，或不评分";
   }
 
-  if (values.grading < 1 || values.grading > 5) {
-    return "请选择给分评分（1-5 星）";
+  if (!isOptionalScore(values.grading)) {
+    return "给分评分需为 1-5 星，或不评分";
   }
 
   const tags = normalizeReviewTags(values.tags);
