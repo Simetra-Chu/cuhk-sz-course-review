@@ -143,11 +143,12 @@ create table if not exists public.feedback (
   created_at timestamptz not null default now()
 );
 
--- 7c. 课程讨论帖
+-- 7c. 课程讨论帖（parent_id 为空为顶层帖，非空为一层回复）
 create table if not exists public.discussion_posts (
   id uuid primary key default gen_random_uuid(),
   course_id uuid not null references public.courses(id) on delete cascade,
   user_id uuid not null references auth.users(id) on delete cascade,
+  parent_id uuid references public.discussion_posts(id) on delete cascade,
   content text not null
     check (
       char_length(trim(content)) >= 8
@@ -216,6 +217,9 @@ on public.discussion_posts (course_id, created_at desc)
 where status = 'visible';
 create index if not exists idx_discussion_posts_user
 on public.discussion_posts (user_id);
+create index if not exists idx_discussion_posts_parent
+on public.discussion_posts (parent_id, created_at asc)
+where parent_id is not null;
 create index if not exists idx_content_likes_target
 on public.content_likes (target_type, target_id);
 
@@ -249,6 +253,44 @@ drop trigger if exists trg_discussion_posts_updated_at on public.discussion_post
 create trigger trg_discussion_posts_updated_at
 before update on public.discussion_posts
 for each row execute function public.set_updated_at();
+
+create or replace function public.trg_discussion_posts_parent_check()
+returns trigger
+language plpgsql
+set search_path = public
+as $$
+declare
+  parent_row public.discussion_posts%rowtype;
+begin
+  if new.parent_id is null then
+    return new;
+  end if;
+
+  select * into parent_row
+  from public.discussion_posts
+  where id = new.parent_id;
+
+  if not found then
+    raise exception '回复的原帖不存在';
+  end if;
+
+  if parent_row.parent_id is not null then
+    raise exception '只能回复顶层讨论，不能回复楼中楼';
+  end if;
+
+  if parent_row.course_id <> new.course_id then
+    raise exception '回复必须属于同一门课程';
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_discussion_posts_parent_check on public.discussion_posts;
+create trigger trg_discussion_posts_parent_check
+before insert or update of parent_id, course_id
+on public.discussion_posts
+for each row execute function public.trg_discussion_posts_parent_check();
 
 create or replace function public.trg_refresh_content_like_count()
 returns trigger

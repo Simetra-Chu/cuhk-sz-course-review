@@ -51,6 +51,7 @@ export type DbDiscussionPost = {
   id: string;
   course_id: string;
   user_id: string;
+  parent_id: string | null;
   content: string;
   status: "visible" | "hidden";
   like_count: number;

@@ -176,7 +176,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
 
       <CourseTabs
         reviewCount={reviews.length}
-        discussionCount={discussions.length}
+        discussionCount={discussions.filter((post) => !post.parent_id).length}
         recommendationCount={professorRecs.length}
         reviews={
           <div className="space-y-4">
