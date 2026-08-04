@@ -27,20 +27,30 @@ export function ReviewRequestButton({
   useEffect(() => {
     setRequested(initialRequested);
     setCount(initialCount);
-  }, [initialRequested, initialCount]);
+  }, [initialRequested, initialCount, courseId]);
 
-  async function readRequestCount() {
+  async function syncCountFromServer() {
     const supabase = createClient();
+    await supabase.rpc("refresh_course_request_count", {
+      p_course_id: courseId,
+    });
     const { data } = await supabase
       .from("courses")
       .select("request_count")
       .eq("id", courseId)
       .maybeSingle();
-    return data?.request_count ?? null;
+    return typeof data?.request_count === "number" ? data.request_count : null;
   }
 
   async function toggleRequest() {
     if (!isLoggedIn || loading) return;
+
+    const wasRequested = requested;
+
+    if (wasRequested) {
+      const ok = window.confirm("确定取消求评价吗？取消后首页求评价榜会计数减少。");
+      if (!ok) return;
+    }
 
     setLoading(true);
     setError(null);
@@ -54,8 +64,6 @@ export function ReviewRequestButton({
       setError("登录状态已失效，请重新登录。");
       return;
     }
-
-    const wasRequested = requested;
 
     const result = wasRequested
       ? await supabase
@@ -72,7 +80,7 @@ export function ReviewRequestButton({
       setLoading(false);
       if (!wasRequested && result.error.code === "23505") {
         setRequested(true);
-        const latest = await readRequestCount();
+        const latest = await syncCountFromServer();
         if (latest != null) setCount(latest);
         router.refresh();
         return;
@@ -83,12 +91,15 @@ export function ReviewRequestButton({
 
     setRequested(!wasRequested);
 
-    const latest = await readRequestCount();
-    if (latest != null) {
-      setCount(latest);
-    } else {
-      setCount((current) => Math.max(0, current + (wasRequested ? -1 : 1)));
+    let latest = await syncCountFromServer();
+    if (latest == null) {
+      latest = Math.max(0, count + (wasRequested ? -1 : 1));
     }
+    // 触发器偶发未更新时，至少保证「已求评价」显示不少于 1
+    if (!wasRequested && latest < 1) {
+      latest = 1;
+    }
+    setCount(latest);
 
     setLoading(false);
     router.refresh();
@@ -116,11 +127,6 @@ export function ReviewRequestButton({
       </button>
       {!isLoggedIn && (
         <p className="mt-1.5 text-xs text-gray-500">登录后可为这门课求评价</p>
-      )}
-      {requested && (
-        <p className="mt-1.5 text-xs text-gray-500">
-          再点一次可取消；计入首页「求评价榜」
-        </p>
       )}
       {error && <p className="mt-1.5 text-xs text-red-600">{error}</p>}
     </div>

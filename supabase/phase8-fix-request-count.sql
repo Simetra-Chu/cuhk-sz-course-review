@@ -40,6 +40,11 @@ create trigger trg_review_requests_refresh_count
 after insert or delete on public.review_requests
 for each row execute function public.trg_refresh_course_request_count();
 
+-- 前端点击后也会主动调用，需授权
+grant execute on function public.refresh_course_request_count(uuid) to authenticated;
+grant execute on function public.refresh_course_request_count(uuid) to service_role;
+grant execute on function public.refresh_course_request_count(uuid) to anon;
+
 -- 回填全部课程计数（修复历史未触发导致的 0）
 update public.courses c
 set request_count = coalesce((

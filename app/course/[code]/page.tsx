@@ -21,6 +21,8 @@ import type {
   DbReview,
 } from "@/types/database";
 
+export const dynamic = "force-dynamic";
+
 type CoursePageProps = {
   params: {
     code: string;

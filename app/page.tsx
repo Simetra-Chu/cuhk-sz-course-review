@@ -21,6 +21,8 @@ import {
 } from "@/lib/courses";
 import { getRecentReviews } from "@/lib/review-queries";
 
+export const dynamic = "force-dynamic";
+
 type HomeProps = {
   searchParams?: {
     q?: string;
