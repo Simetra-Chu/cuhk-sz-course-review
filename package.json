@@ -9,7 +9,8 @@
     "lint": "next lint",
     "extract:courses": "tsx scripts/extract-pdf-courses.ts",
     "normalize:courses": "tsx scripts/normalize-sis-courses.ts",
-    "import:courses": "tsx scripts/import-courses.ts"
+    "import:courses": "tsx scripts/import-courses.ts",
+    "import:nylon": "tsx scripts/import-nylon-moments.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.3",
