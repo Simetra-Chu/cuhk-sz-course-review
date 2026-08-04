@@ -2,7 +2,7 @@
 
 import { Loader2, MessageCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 type ReviewRequestButtonProps = {
@@ -24,6 +24,21 @@ export function ReviewRequestButton({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    setRequested(initialRequested);
+    setCount(initialCount);
+  }, [initialRequested, initialCount]);
+
+  async function readRequestCount() {
+    const supabase = createClient();
+    const { data } = await supabase
+      .from("courses")
+      .select("request_count")
+      .eq("id", courseId)
+      .maybeSingle();
+    return data?.request_count ?? null;
+  }
+
   async function toggleRequest() {
     if (!isLoggedIn || loading) return;
 
@@ -40,7 +55,9 @@ export function ReviewRequestButton({
       return;
     }
 
-    const result = requested
+    const wasRequested = requested;
+
+    const result = wasRequested
       ? await supabase
           .from("review_requests")
           .delete()
@@ -51,11 +68,12 @@ export function ReviewRequestButton({
           user_id: user.id,
         });
 
-    setLoading(false);
-
     if (result.error) {
-      if (!requested && result.error.code === "23505") {
+      setLoading(false);
+      if (!wasRequested && result.error.code === "23505") {
         setRequested(true);
+        const latest = await readRequestCount();
+        if (latest != null) setCount(latest);
         router.refresh();
         return;
       }
@@ -63,8 +81,16 @@ export function ReviewRequestButton({
       return;
     }
 
-    setRequested((current) => !current);
-    setCount((current) => Math.max(0, current + (requested ? -1 : 1)));
+    setRequested(!wasRequested);
+
+    const latest = await readRequestCount();
+    if (latest != null) {
+      setCount(latest);
+    } else {
+      setCount((current) => Math.max(0, current + (wasRequested ? -1 : 1)));
+    }
+
+    setLoading(false);
     router.refresh();
   }
 
@@ -74,6 +100,7 @@ export function ReviewRequestButton({
         type="button"
         onClick={toggleRequest}
         disabled={!isLoggedIn || loading}
+        aria-pressed={requested}
         className={`inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-60 ${
           requested
             ? "border-purple-700 bg-purple-700 text-white hover:bg-purple-800"
@@ -89,6 +116,11 @@ export function ReviewRequestButton({
       </button>
       {!isLoggedIn && (
         <p className="mt-1.5 text-xs text-gray-500">登录后可为这门课求评价</p>
+      )}
+      {requested && (
+        <p className="mt-1.5 text-xs text-gray-500">
+          再点一次可取消；计入首页「求评价榜」
+        </p>
       )}
       {error && <p className="mt-1.5 text-xs text-red-600">{error}</p>}
     </div>

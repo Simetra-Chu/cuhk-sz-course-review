@@ -232,22 +232,18 @@ export default async function CoursePage({ params }: CoursePageProps) {
             authorScoresByUserId={authorScoresByUserId}
             canReport={isLoggedIn}
             emptyAction={
-              <div className="flex flex-wrap items-center gap-3">
-                <ReviewRequestButton
-                  courseId={course.id}
-                  isLoggedIn={isLoggedIn}
-                  initialRequested={hasRequestedReview}
-                  initialCount={course.request_count ?? 0}
-                />
-                {isLoggedIn ? (
-                  <a
-                    href="#write-review"
-                    className="inline-flex items-center rounded-xl bg-purple-700 px-4 py-2 text-sm font-medium text-white transition hover:bg-purple-800"
-                  >
-                    去评价区打分
-                  </a>
-                ) : null}
-              </div>
+              isLoggedIn ? (
+                <a
+                  href="#write-review"
+                  className="inline-flex items-center rounded-xl bg-purple-700 px-4 py-2 text-sm font-medium text-white transition hover:bg-purple-800"
+                >
+                  去评价区打分
+                </a>
+              ) : (
+                <p className="text-xs text-gray-500">
+                  登录后可在上方评论或评价
+                </p>
+              )
             }
           />
         }
