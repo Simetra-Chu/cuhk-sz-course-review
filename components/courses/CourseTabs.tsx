@@ -41,20 +41,20 @@ export function CourseTabs({
 
   return (
     <section className="mt-8 space-y-10">
-      <div id="course-reviews">
-        <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
-          <h2 className="text-xl font-semibold text-purple-950">评价区</h2>
-          <p className="text-sm text-gray-500">{reviewCount} 条评价</p>
-        </div>
-        {reviews}
-      </div>
-
       <div id="course-comments">
         <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
           <h2 className="text-xl font-semibold text-purple-950">评论区</h2>
           <p className="text-sm text-gray-500">{discussionCount} 条评论</p>
         </div>
         {discussions}
+      </div>
+
+      <div id="course-reviews">
+        <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="text-xl font-semibold text-purple-950">评价区</h2>
+          <p className="text-sm text-gray-500">{reviewCount} 条评价</p>
+        </div>
+        {reviews}
       </div>
 
       <div>
