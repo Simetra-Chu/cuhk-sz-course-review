@@ -96,7 +96,7 @@ export const MIN_REVIEW_CONTENT_LENGTH = 16;
 /** 推荐教授专栏 */
 export const MIN_PROFESSOR_NAME_LENGTH = 2;
 export const MAX_PROFESSOR_NAME_LENGTH = 40;
-export const MIN_PROFESSOR_REC_CONTENT_LENGTH = 8;
+export const MIN_PROFESSOR_REC_CONTENT_LENGTH = 1;
 
 /** 用户反馈 */
 export const FEEDBACK_CATEGORIES = [

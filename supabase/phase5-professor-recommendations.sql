@@ -11,7 +11,7 @@ create table if not exists public.professor_recommendations (
       and char_length(trim(professor_name)) <= 40
     ),
   content text not null
-    check (char_length(trim(content)) >= 8),
+    check (char_length(trim(content)) >= 1),
   status public.review_status not null default 'visible',
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
