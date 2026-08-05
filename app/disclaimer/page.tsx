@@ -57,7 +57,7 @@ const sections = [
     bullets: [
       "公开展示：课程评分、标签、评价正文和发表时间；",
       "不公开展示：校内邮箱、认证用户标识及登录凭证；",
-      "用户权利：可以在课程页面修改或删除自己的评价；如需反馈缺课、使用问题或数据处理相关事项，可通过站内「用户反馈」页面或项目 GitHub 仓库联系。",
+      "用户权利：可以在课程页面修改或删除自己的评价；如需反馈缺课、使用问题或数据处理相关事项，可通过站内「用户反馈」页面联系。",
     ],
   },
   {
@@ -127,15 +127,6 @@ export default function DisclaimerPage() {
                   >
                     用户反馈
                   </Link>
-                  ；GitHub：
-                  <a
-                    href="https://github.com/Simetra-Chu/cuhk-sz-course-review"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="ml-1 text-purple-700 underline underline-offset-2 hover:text-purple-900"
-                  >
-                    项目仓库
-                  </a>
                 </p>
               )}
             </section>
