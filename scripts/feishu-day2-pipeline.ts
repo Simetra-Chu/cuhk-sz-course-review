@@ -236,7 +236,7 @@ function prepareBundle(
   }
 
   const scores: PreparedScore[] = [];
-  for (const [course_code, rows] of byCourse) {
+  for (const [course_code, rows] of Array.from(byCourse.entries())) {
     const { scoreCopies } = activityWeights(activity[course_code] ?? rows.length);
     for (let i = 0; i < scoreCopies; i += 1) {
       const src = rows[i % rows.length];
@@ -283,7 +283,7 @@ function normalizeBundle(data: PreparedBundle & { ratings?: PreparedBundle["rati
   }
   // 始终按当前语义模型重算三维分（综合依赖难度/给分，ρ≈0.35）
   const scores: PreparedScore[] = [];
-  for (const [course_code, rows] of byCourse) {
+  for (const [course_code, rows] of Array.from(byCourse.entries())) {
     const count = activity[course_code] ?? rows.length;
     const { scoreCopies } = activityWeights(count);
     for (let i = 0; i < scoreCopies; i += 1) {
