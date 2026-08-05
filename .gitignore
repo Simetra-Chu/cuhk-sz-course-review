@@ -42,3 +42,7 @@ next-env.d.ts
 /data/sis-import-stale.json
 /data/pdf-courses.raw.json
 /data/pdf-title-conflicts.json
+/data/feishu-scrapes/
+/_excel_dump.json
+/_ped_dump.json
+/scrape-trial-output.txt

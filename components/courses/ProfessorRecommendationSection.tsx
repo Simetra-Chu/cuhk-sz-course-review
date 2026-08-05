@@ -2,7 +2,7 @@
 
 import { Loader2, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   MAX_PROFESSOR_NAME_LENGTH,
   MIN_PROFESSOR_NAME_LENGTH,
@@ -20,6 +20,8 @@ type ProfessorRecommendationSectionProps = {
   embedded?: boolean;
 };
 
+const PREVIEW_PER_PROFESSOR = 3;
+
 export function ProfessorRecommendationSection({
   courseId,
   isLoggedIn,
@@ -34,6 +36,51 @@ export function ProfessorRecommendationSection({
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [expandedProfessors, setExpandedProfessors] = useState<Set<string>>(
+    () => new Set()
+  );
+
+  const groups = useMemo(() => {
+    const map = new Map<
+      string,
+      { key: string; displayName: string; items: DbProfessorRecommendation[] }
+    >();
+    for (const item of initialItems) {
+      const key = item.professor_name.trim().toLowerCase();
+      const existing = map.get(key);
+      if (existing) {
+        existing.items.push(item);
+      } else {
+        map.set(key, {
+          key,
+          displayName: item.professor_name.trim(),
+          items: [item],
+        });
+      }
+    }
+    const list = Array.from(map.values());
+    for (const g of list) {
+      g.items.sort(
+        (a, b) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+    }
+    list.sort((a, b) => {
+      const aTime = new Date(a.items[0]?.created_at ?? 0).getTime();
+      const bTime = new Date(b.items[0]?.created_at ?? 0).getTime();
+      return bTime - aTime;
+    });
+    return list;
+  }, [initialItems]);
+
+  function toggleExpanded(key: string) {
+    setExpandedProfessors((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -81,10 +128,6 @@ export function ProfessorRecommendationSection({
     setLoading(false);
 
     if (insertError) {
-      if (insertError.code === "23505") {
-        setError("你已经推荐过这位教授，可先删除原条目再重新填写。");
-        return;
-      }
       setError(insertError.message);
       return;
     }
@@ -126,7 +169,7 @@ export function ProfessorRecommendationSection({
           <h2 className="text-lg font-semibold text-purple-900">推荐教授</h2>
         )}
         <p className={`text-sm text-gray-600 ${embedded ? "" : "mt-1"}`}>
-          分享你愿意推荐的授课老师与理由。匿名展示，不做票数汇总，仅供参考。
+          分享对授课老师的评价与推荐理由。匿名展示，不做票数汇总，仅供参考。
         </p>
       </div>
 
@@ -176,56 +219,81 @@ export function ProfessorRecommendationSection({
         </div>
       )}
 
-      <div className="space-y-3">
-        {initialItems.length === 0 ? (
+      <div className="space-y-6">
+        {groups.length === 0 ? (
           <p className="rounded-2xl border border-purple-100 bg-white p-5 text-sm text-gray-600">
             还没有推荐，欢迎进来分享。
           </p>
         ) : (
-          initialItems.map((item) => {
-            const isOwn = currentUserId === item.user_id;
+          groups.map((group) => {
+            const expanded = expandedProfessors.has(group.key);
+            const visibleItems =
+              expanded || group.items.length <= PREVIEW_PER_PROFESSOR
+                ? group.items
+                : group.items.slice(0, PREVIEW_PER_PROFESSOR);
+            const hiddenCount = group.items.length - visibleItems.length;
+
             return (
-              <article
-                key={item.id}
-                className="rounded-2xl border border-purple-100 bg-white p-5 shadow-sm"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <h3 className="text-base font-semibold text-purple-950">
-                      {item.professor_name}
-                    </h3>
-                    <p className="mt-1 text-xs text-gray-500">
-                      匿名同学 ·{" "}
-                      <time dateTime={item.created_at}>
-                        {formatReviewDate(item.created_at)}
-                      </time>
-                      {isOwn && (
-                        <span className="ml-2 rounded-full bg-purple-100 px-2 py-0.5 text-xs text-purple-800">
-                          我的推荐
-                        </span>
-                      )}
-                    </p>
-                  </div>
-                  {isOwn && (
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(item.id)}
-                      disabled={deletingId === item.id}
-                      className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-red-600 transition hover:bg-red-50 disabled:opacity-60"
+              <div key={group.key} className="space-y-3">
+                {visibleItems.map((item) => {
+                  const isOwn = currentUserId === item.user_id;
+                  return (
+                    <article
+                      key={item.id}
+                      className="rounded-2xl border border-purple-100 bg-white p-5 shadow-sm"
                     >
-                      {deletingId === item.id ? (
-                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      ) : (
-                        <Trash2 className="h-3.5 w-3.5" />
-                      )}
-                      删除
-                    </button>
-                  )}
-                </div>
-                <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-gray-800">
-                  {item.content}
-                </p>
-              </article>
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <h3 className="text-base font-semibold text-purple-950">
+                            {item.professor_name}
+                          </h3>
+                          <p className="mt-1 text-xs text-gray-500">
+                            匿名同学 ·{" "}
+                            <time dateTime={item.created_at}>
+                              {formatReviewDate(item.created_at)}
+                            </time>
+                            {isOwn && (
+                              <span className="ml-2 rounded-full bg-purple-100 px-2 py-0.5 text-xs text-purple-800">
+                                我的推荐
+                              </span>
+                            )}
+                          </p>
+                        </div>
+                        {isOwn && (
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(item.id)}
+                            disabled={deletingId === item.id}
+                            className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-red-600 transition hover:bg-red-50 disabled:opacity-60"
+                          >
+                            {deletingId === item.id ? (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                              <Trash2 className="h-3.5 w-3.5" />
+                            )}
+                            删除
+                          </button>
+                        )}
+                      </div>
+                      <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-gray-800">
+                        {item.content}
+                      </p>
+                    </article>
+                  );
+                })}
+
+                {group.items.length > PREVIEW_PER_PROFESSOR && (
+                  <button
+                    type="button"
+                    onClick={() => toggleExpanded(group.key)}
+                    className="w-full rounded-xl border border-purple-100 bg-purple-50/60 px-4 py-2.5 text-sm font-medium text-purple-800 transition hover:bg-purple-100"
+                  >
+                    {expanded
+                      ? "收起评价"
+                      : `展开更多评价（共 ${group.items.length} 条${hiddenCount > 0 ? `，还有 ${hiddenCount} 条` : ""}）`}
+                  </button>
+                )}
+              </div>
             );
           })
         )}

@@ -71,6 +71,7 @@ export function ReviewRequestButton({
           .delete()
           .eq("course_id", courseId)
           .eq("user_id", user.id)
+          .eq("is_imported", false)
       : await supabase.from("review_requests").insert({
           course_id: courseId,
           user_id: user.id,

@@ -9,6 +9,7 @@ import { ProfessorRecommendationSection } from "@/components/courses/ProfessorRe
 import { ReviewRequestButton } from "@/components/courses/ReviewRequestButton";
 import { ReviewForm } from "@/components/reviews/ReviewForm";
 import { isAllowedEmail } from "@/lib/auth";
+import { IMPORT_AUTHOR_USER_ID } from "@/lib/constants";
 import {
   formatRating,
   getCourseByCode,
@@ -99,13 +100,15 @@ export default async function CoursePage({ params }: CoursePageProps) {
           .select("*")
           .eq("course_id", course.id)
           .eq("user_id", user.id)
-          .maybeSingle(),
+          .order("created_at", { ascending: false })
+          .limit(1),
         supabase
           .from("review_requests")
           .select("id")
           .eq("course_id", course.id)
           .eq("user_id", user.id)
-          .maybeSingle(),
+          .eq("is_imported", false)
+          .limit(1),
         reviewIds.length > 0
           ? supabase
               .from("content_likes")
@@ -124,8 +127,8 @@ export default async function CoursePage({ params }: CoursePageProps) {
           : Promise.resolve({ data: [] as { target_id: string }[] }),
       ]);
 
-    myReview = myReviewResult.data as DbReview | null;
-    hasRequestedReview = Boolean(myRequestResult.data);
+    myReview = (myReviewResult.data?.[0] as DbReview | undefined) ?? null;
+    hasRequestedReview = Boolean(myRequestResult.data?.length);
     likedReviewIds = new Set(
       (reviewLikesResult.data ?? []).map((row) => row.target_id)
     );
@@ -194,7 +197,11 @@ export default async function CoursePage({ params }: CoursePageProps) {
         reviews={
           <div id="write-review">
             {isLoggedIn ? (
-              <ReviewForm courseId={course.id} existingReview={myReview} />
+              <ReviewForm
+                courseId={course.id}
+                existingReview={myReview}
+                allowMultipleScores={user?.id === IMPORT_AUTHOR_USER_ID}
+              />
             ) : (
               <div className="rounded-2xl border border-dashed border-purple-200 bg-purple-50/40 p-6 text-sm text-purple-900">
                 登录后可发表评价。请使用右上角校内邮箱登录。

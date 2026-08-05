@@ -10,7 +10,13 @@
     "extract:courses": "tsx scripts/extract-pdf-courses.ts",
     "normalize:courses": "tsx scripts/normalize-sis-courses.ts",
     "import:courses": "tsx scripts/import-courses.ts",
-    "import:nylon": "tsx scripts/import-nylon-moments.ts"
+    "import:nylon": "tsx scripts/import-nylon-moments.ts",
+    "scrape:feishu": "tsx scripts/scrape-feishu-reviews.ts",
+    "scrape:feishu-view": "tsx scripts/scrape-feishu-base-view.ts",
+    "transform:feishu": "tsx scripts/transform-feishu-reviews.ts",
+    "import:feishu": "tsx scripts/import-feishu-transformed.ts",
+    "feishu:sample": "tsx scripts/feishu-sample-pipeline.ts",
+    "feishu:day2": "tsx scripts/feishu-day2-pipeline.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.3",

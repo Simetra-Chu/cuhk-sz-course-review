@@ -114,6 +114,14 @@ export const MAX_FEEDBACK_CONTENT_LENGTH = 2000;
 export const MIN_DISCUSSION_CONTENT_LENGTH = 1;
 export const MAX_DISCUSSION_CONTENT_LENGTH = 1000;
 
+/**
+ * 飞书抽样导入专用账号：可同课多条评分 / 多条教授评价。
+ * 与 supabase/phase11-multi-rec-and-import-scores.sql 一致。
+ */
+export const IMPORT_AUTHOR_USER_ID =
+  "20feb4f8-023f-43db-8ae1-d31cba672dbc";
+export const IMPORT_AUTHOR_EMAIL = "125020443@link.cuhk.edu.cn";
+
 /** 教务处「本科专业」索引页 */
 export const REGISTRY_MAJORS_URL = "http://registry.cuhk.edu.cn/page/20";
 

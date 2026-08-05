@@ -207,6 +207,18 @@ export function CourseMixedFeed({
                 给分 {formatScoreLabel(scores?.grading)}
               </span>
             </div>
+            {(post.tags ?? []).length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {(post.tags ?? []).map((tag) => (
+                  <span
+                    key={tag}
+                    className="rounded-full border border-sky-100 bg-sky-50 px-2 py-0.5 text-[11px] text-sky-800"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
           {isOwn && (
             <button

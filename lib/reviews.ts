@@ -48,6 +48,44 @@ export function normalizeOptionalScore(value: number) {
   return value >= 1 && value <= 5 ? value : null;
 }
 
+/** 综合分与「难度+给分」组合信号的目标相关系数 */
+export const OVERALL_SCORE_RHO = 0.35;
+
+function scoreToUnit(score: number) {
+  return (score - 3) / 1.5;
+}
+
+function unitToScore(unit: number) {
+  return Math.min(5, Math.max(1, Math.round(3 + unit * 1.5)));
+}
+
+/**
+ * 由难度、给分推导综合分，使综合与二者组合信号的相关约 ρ=0.35。
+ * 难度↑、给分↑ → 综合倾向更高（难度代表挑战与收获，给分代表宽松程度）。
+ * @param noise01 0–1 随机扰动，用于导入多份离散分
+ */
+export function suggestOverallFromDimensions(
+  difficulty: number | null | undefined,
+  grading: number | null | undefined,
+  noise01 = 0.5
+): number | null {
+  const hasD = difficulty != null && difficulty >= 1 && difficulty <= 5;
+  const hasG = grading != null && grading >= 1 && grading <= 5;
+  if (!hasD && !hasG) return null;
+
+  const d = hasD ? (difficulty as number) : 3;
+  const g = hasG ? (grading as number) : 3;
+  const zd = scoreToUnit(d);
+  const zg = scoreToUnit(g);
+  // 等权组合并近似单位方差
+  const signal = (zd + zg) / Math.SQRT2;
+  const rho = OVERALL_SCORE_RHO;
+  // U(0,1) → 近似标准正态尺度的噪声
+  const noiseZ = (noise01 - 0.5) * 3.2;
+  const ratingZ = rho * signal + Math.sqrt(1 - rho * rho) * noiseZ;
+  return unitToScore(ratingZ);
+}
+
 export function validateReviewForm(values: ReviewFormValues) {
   if (!isOptionalScore(values.rating)) {
     return "综合评分需为 1-5 星，或不评分";

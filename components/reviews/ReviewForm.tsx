@@ -9,12 +9,14 @@ import {
   MAX_CUSTOM_TAG_LENGTH,
   MAX_REVIEW_TAGS,
   MIN_CUSTOM_TAG_LENGTH,
+  IMPORT_AUTHOR_USER_ID,
   REVIEW_TAGS,
 } from "@/lib/constants";
 import {
   isPresetReviewTag,
   normalizeOptionalScore,
   normalizeReviewTags,
+  suggestOverallFromDimensions,
   validateReviewForm,
 } from "@/lib/reviews";
 import { createClient } from "@/lib/supabase/client";
@@ -23,14 +25,49 @@ import type { DbReview } from "@/types/database";
 type ReviewFormProps = {
   courseId: string;
   existingReview?: DbReview | null;
+  /** 导入账号可同课多次打分，表单始终走「新增」 */
+  allowMultipleScores?: boolean;
 };
 
-export function ReviewForm({ courseId, existingReview }: ReviewFormProps) {
+export function ReviewForm({
+  courseId,
+  existingReview,
+  allowMultipleScores = false,
+}: ReviewFormProps) {
   const router = useRouter();
-  const [rating, setRating] = useState(existingReview?.rating ?? 0);
-  const [difficulty, setDifficulty] = useState(existingReview?.difficulty ?? 0);
-  const [grading, setGrading] = useState(existingReview?.grading ?? 0);
-  const [tags, setTags] = useState<string[]>(existingReview?.tags ?? []);
+  const editing = Boolean(existingReview) && !allowMultipleScores;
+  const [rating, setRating] = useState(editing ? existingReview?.rating ?? 0 : 0);
+  const [difficulty, setDifficulty] = useState(
+    editing ? existingReview?.difficulty ?? 0 : 0
+  );
+  const [grading, setGrading] = useState(
+    editing ? existingReview?.grading ?? 0 : 0
+  );
+  const [tags, setTags] = useState<string[]>(
+    editing ? existingReview?.tags ?? [] : []
+  );
+  /** 用户是否手动改过综合分；未改时随难度/给分联动 */
+  const [ratingManual, setRatingManual] = useState(false);
+
+  function applyDimensionChange(
+    nextDifficulty: number,
+    nextGrading: number,
+    manualOverall?: number
+  ) {
+    setDifficulty(nextDifficulty);
+    setGrading(nextGrading);
+    if (manualOverall != null) {
+      setRating(manualOverall);
+      setRatingManual(true);
+      return;
+    }
+    if (ratingManual) return;
+    const suggested = suggestOverallFromDimensions(
+      nextDifficulty >= 1 ? nextDifficulty : null,
+      nextGrading >= 1 ? nextGrading : null
+    );
+    if (suggested != null) setRating(suggested);
+  }
   const [customTagDraft, setCustomTagDraft] = useState("");
   const [showCustomTagInput, setShowCustomTagInput] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -133,11 +170,11 @@ export function ReviewForm({ courseId, existingReview }: ReviewFormProps) {
       tags: normalizeReviewTags(tags),
     };
 
-    const result = existingReview
+    const result = editing
       ? await supabase
           .from("reviews")
           .update(scoreAndTags)
-          .eq("id", existingReview.id)
+          .eq("id", existingReview!.id)
           .select("id")
           .single()
       : await supabase
@@ -162,12 +199,19 @@ export function ReviewForm({ courseId, existingReview }: ReviewFormProps) {
       return;
     }
 
-    setMessage(existingReview ? "评价已更新。" : "评价已发表，将以匿名形式展示。");
+    setMessage(editing ? "评价已更新。" : "评价已发表，将以匿名形式展示。");
+    if (allowMultipleScores || user.id === IMPORT_AUTHOR_USER_ID) {
+      setRating(0);
+      setDifficulty(0);
+      setGrading(0);
+      setTags([]);
+      setRatingManual(false);
+    }
     router.refresh();
   }
 
   async function handleDelete() {
-    if (!existingReview) return;
+    if (!editing || !existingReview) return;
 
     const confirmed = window.confirm(
       "确定删除这条评价吗？删除后无法恢复，课程评分和评价数也会自动更新。"
@@ -207,29 +251,32 @@ export function ReviewForm({ courseId, existingReview }: ReviewFormProps) {
     >
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-lg font-semibold text-purple-900">
-          {existingReview ? "修改我的评价" : "发表评价"}
+          {editing ? "修改我的评价" : "发表评价"}
         </h2>
         <span className="text-xs text-gray-500">匿名展示</span>
       </div>
 
       <div className="mt-6 grid gap-5 sm:grid-cols-3">
         <ScoreInput
-          label="综合评分"
-          value={rating}
-          onChange={setRating}
-          hint="1 很差 → 5 很好"
-        />
-        <ScoreInput
           label="课程难度"
           value={difficulty}
-          onChange={setDifficulty}
+          onChange={(value) => applyDimensionChange(value, grading)}
           hint="1 轻松 → 5 很难"
         />
         <ScoreInput
           label="给分情况"
           value={grading}
-          onChange={setGrading}
+          onChange={(value) => applyDimensionChange(difficulty, value)}
           hint="1 严格 → 5 慷慨"
+        />
+        <ScoreInput
+          label="综合评分"
+          value={rating}
+          onChange={(value) => {
+            setRating(value);
+            setRatingManual(true);
+          }}
+          hint="默认随难度/给分联动（相关约 0.35），可手动覆盖"
         />
       </div>
 
@@ -337,10 +384,10 @@ export function ReviewForm({ courseId, existingReview }: ReviewFormProps) {
           className="inline-flex items-center gap-2 rounded-xl bg-purple-700 px-5 py-3 text-sm font-medium text-white transition hover:bg-purple-800 disabled:opacity-60"
         >
           {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-          {existingReview ? "保存修改" : "发表评价"}
+          {editing ? "保存修改" : "发表评价"}
         </button>
 
-        {existingReview && (
+        {editing && (
           <button
             type="button"
             onClick={handleDelete}

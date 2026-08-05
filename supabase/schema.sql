@@ -51,6 +51,23 @@ as $$
     ) <= 2;
 $$;
 
+create or replace function public.valid_discussion_tags(p_tags text[])
+returns boolean
+language sql
+immutable
+set search_path = ''
+as $$
+  select
+    cardinality(coalesce(p_tags, '{}'::text[])) <= 8
+    and not exists (
+      select 1
+      from unnest(coalesce(p_tags, '{}'::text[])) as tag
+      where char_length(trim(tag)) < 2
+         or char_length(trim(tag)) > 12
+         or tag <> trim(tag)
+    );
+$$;
+
 -- 3. 课程表
 create table if not exists public.courses (
   id uuid primary key default gen_random_uuid(),
@@ -77,7 +94,7 @@ create table if not exists public.courses (
   updated_at timestamptz not null default now()
 );
 
--- 4. 评价表（每用户每课程仅一条）
+-- 4. 评价表（普通用户每课一条；导入账号可多条，见 phase11）
 create table if not exists public.reviews (
   id uuid primary key default gen_random_uuid(),
   course_id uuid not null references public.courses(id) on delete cascade,
@@ -96,7 +113,7 @@ create table if not exists public.reviews (
   like_count integer not null default 0 check (like_count >= 0),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  unique (course_id, user_id)
+  unique (course_id, user_id) -- phase11：改为非导入账号部分唯一索引
 );
 
 -- 5. 举报表（每用户每评价仅一次）
@@ -109,13 +126,13 @@ create table if not exists public.reports (
   unique (review_id, user_id)
 );
 
--- 6. 求评价表（每用户每课程仅一次）
+-- 6. 求评价表（普通用户每课一次；导入账号可多行权重，见 phase11）
 create table if not exists public.review_requests (
   id uuid primary key default gen_random_uuid(),
   course_id uuid not null references public.courses(id) on delete cascade,
   user_id uuid not null references auth.users(id) on delete cascade,
   created_at timestamptz not null default now(),
-  unique (course_id, user_id)
+  unique (course_id, user_id) -- phase11：导入账号可多行
 );
 
 -- 7b. 用户反馈
@@ -158,6 +175,8 @@ create table if not exists public.discussion_posts (
       char_length(trim(content)) >= 1
       and char_length(trim(content)) <= 1000
     ),
+  tags text[] not null default '{}'
+    check (public.valid_discussion_tags(tags)),
   status public.review_status not null default 'visible',
   like_count integer not null default 0 check (like_count >= 0),
   created_at timestamptz not null default now(),
@@ -201,7 +220,8 @@ create index if not exists idx_reviews_recent_visible on public.reviews (created
 create index if not exists idx_review_requests_course on public.review_requests (course_id);
 create index if not exists idx_review_requests_user on public.review_requests (user_id);
 create index if not exists idx_courses_request_count on public.courses (request_count desc);
-create unique index if not exists uq_prof_rec_course_user_name
+-- phase11 起取消同课同用户同教授唯一约束，允许多条独立评价
+create index if not exists idx_prof_rec_course_user_name
 on public.professor_recommendations (
   course_id,
   user_id,

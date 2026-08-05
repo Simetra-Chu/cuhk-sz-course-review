@@ -57,27 +57,27 @@ function hasProfessor(name: string) {
 
 function buildCommentContent(row: ExcelRow) {
   const parts: string[] = [];
-  if (row.类型 === "考核形式") {
-    parts.push("【考核形式】");
-  } else {
-    parts.push("【朋友圈】");
-  }
   if (hasProfessor(row.教授)) {
     parts.push(`${row.教授.trim()}：`);
   }
   parts.push(row.评价.trim());
-  const text = parts.join("").trim();
-  // 幂等标记，便于重复导入时跳过
-  return `${text}\n\n[nylon:${row.序号}]`;
+  return parts.join("").trim();
 }
 
 function buildProfessorContent(rows: ExcelRow[]) {
-  const body = rows
+  return rows
     .map((row) => row.评价.trim())
     .filter(Boolean)
     .join("\n\n——\n\n");
-  const ids = rows.map((row) => row.序号).join(",");
-  return `${body}\n\n[nylon:${ids}]`;
+}
+
+/** 去掉历史导入留下的前缀与 nylon 标记 */
+function stripImportDecorations(content: string) {
+  return content
+    .replace(/【考核形式】/g, "")
+    .replace(/【朋友圈】/g, "")
+    .replace(/\n*\s*\[nylon:[^\]]+\]\s*/g, "")
+    .trim();
 }
 
 async function main() {
@@ -153,33 +153,30 @@ async function main() {
     professorGroups.set(key, list);
   }
 
-  // 已有 nylon 标记，避免重复
+  // 已有正文（去前缀后）用于避免重复导入
   const { data: existingPosts } = await supabase
     .from("discussion_posts")
     .select("id, content")
-    .eq("user_id", AUTHOR_USER_ID)
-    .ilike("content", "%[nylon:%");
+    .eq("user_id", AUTHOR_USER_ID);
 
-  const existingNylonIds = new Set<string>();
-  for (const post of existingPosts ?? []) {
-    const matches = String(post.content).matchAll(/\[nylon:([^\]]+)\]/g);
-    for (const m of matches) {
-      for (const id of m[1].split(",")) existingNylonIds.add(id.trim());
-    }
-  }
+  const existingCommentBodies = new Set(
+    (existingPosts ?? []).map((post) =>
+      stripImportDecorations(String(post.content))
+    )
+  );
 
   const { data: existingRecs } = await supabase
     .from("professor_recommendations")
     .select("id, content, professor_name, course_id")
-    .eq("user_id", AUTHOR_USER_ID)
-    .ilike("content", "%[nylon:%");
+    .eq("user_id", AUTHOR_USER_ID);
 
-  for (const rec of existingRecs ?? []) {
-    const matches = String(rec.content).matchAll(/\[nylon:([^\]]+)\]/g);
-    for (const m of matches) {
-      for (const id of m[1].split(",")) existingNylonIds.add(id.trim());
-    }
-  }
+  const existingRecBodies = new Set(
+    (existingRecs ?? []).map((rec) =>
+      `${String(rec.course_id)}::${String(rec.professor_name)
+        .trim()
+        .toLowerCase()}::${stripImportDecorations(String(rec.content))}`
+    )
+  );
 
   const commentsToInsert: Array<{
     course_id: string;
@@ -189,12 +186,12 @@ async function main() {
   }> = [];
 
   for (const row of commentRows) {
-    if (existingNylonIds.has(row.序号)) {
+    const code = resolveCourseCode(row.课程代码);
+    const content = buildCommentContent(row);
+    if (existingCommentBodies.has(content)) {
       console.log(`跳过已导入评论 序号=${row.序号}`);
       continue;
     }
-    const code = resolveCourseCode(row.课程代码);
-    const content = buildCommentContent(row);
     if (content.length > 1000) {
       throw new Error(`评论过长 序号=${row.序号} len=${content.length}`);
     }
@@ -215,18 +212,11 @@ async function main() {
   const recsToUpdate: Array<{ id: string; content: string }> = [];
 
   for (const [, group] of Array.from(professorGroups.entries())) {
-    const fresh = group.filter((row) => !existingNylonIds.has(row.序号));
-    if (fresh.length === 0) {
-      console.log(
-        `跳过已导入教授评价 序号=${group.map((r) => r.序号).join(",")}`
-      );
-      continue;
-    }
-
     const code = resolveCourseCode(group[0].课程代码);
     const courseId = courseIdByCode.get(code)!;
     const professorName = group[0].教授.trim();
-    const content = buildProfessorContent(fresh);
+    const content = buildProfessorContent(group);
+    const bodyKey = `${courseId}::${professorName.toLowerCase()}::${content}`;
 
     const existing = (existingRecs ?? []).find(
       (rec) =>
@@ -236,11 +226,21 @@ async function main() {
     );
 
     if (existing) {
-      // 已有同教授推荐：追加内容
+      const cleaned = stripImportDecorations(String(existing.content));
+      if (cleaned === content || cleaned.includes(content)) {
+        console.log(
+          `跳过已导入教授评价 序号=${group.map((r) => r.序号).join(",")}`
+        );
+        continue;
+      }
       recsToUpdate.push({
         id: existing.id as string,
-        content: `${String(existing.content).trim()}\n\n——\n\n${content}`,
+        content,
       });
+    } else if (existingRecBodies.has(bodyKey)) {
+      console.log(
+        `跳过已导入教授评价 序号=${group.map((r) => r.序号).join(",")}`
+      );
     } else {
       recsToInsert.push({
         course_id: courseId,
