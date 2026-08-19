@@ -12,7 +12,7 @@ import type { DbReview } from "@/types/database";
 
 export type AuthorCourseScores = Pick<
   DbReview,
-  "rating" | "difficulty" | "grading"
+  "rating" | "difficulty" | "grading" | "attendance"
 >;
 
 type DiscussionSectionProps = {

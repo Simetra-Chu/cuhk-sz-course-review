@@ -80,8 +80,6 @@ export const REVIEW_TAGS = [
   "作业量大",
   "推荐",
   "避雷",
-  "签到少",
-  "点名频繁",
 ] as const;
 
 export type ReviewTag = (typeof REVIEW_TAGS)[number];

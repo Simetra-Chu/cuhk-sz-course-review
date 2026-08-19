@@ -80,6 +80,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
         rating: review.rating,
         difficulty: review.difficulty,
         grading: review.grading,
+        attendance: review.attendance,
       },
     ])
   );
@@ -176,6 +177,10 @@ export default async function CoursePage({ params }: CoursePageProps) {
           <span>
             给分 {formatRating(course.avg_grading, course.review_count)}
             <span className="ml-1 text-xs text-gray-400">（高=慷慨）</span>
+          </span>
+          <span>
+            签到 {formatRating(course.avg_attendance ?? 0, course.review_count)}
+            <span className="ml-1 text-xs text-gray-400">（高=频繁）</span>
           </span>
           <span>{course.review_count} 条评价</span>
         </div>

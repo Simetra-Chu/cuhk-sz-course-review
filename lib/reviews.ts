@@ -10,6 +10,7 @@ export type ReviewFormValues = {
   rating: number | null;
   difficulty: number | null;
   grading: number | null;
+  attendance: number | null;
   tags: string[];
 };
 
@@ -17,14 +18,21 @@ export type ReviewScoreFields = {
   rating: number | null;
   difficulty: number | null;
   grading: number | null;
+  attendance: number | null;
 };
 
 export function normalizeReviewTags(tags: string[]) {
   return Array.from(new Set(tags.map((tag) => tag.trim()).filter(Boolean)));
 }
 
+/** 含历史签到标签，避免旧评价编辑时被当成自定义标签超限 */
+const LEGACY_PRESET_TAGS = ["签到少", "点名频繁"] as const;
+
 export function isPresetReviewTag(tag: string) {
-  return REVIEW_TAGS.some((preset) => preset === tag);
+  return (
+    REVIEW_TAGS.some((preset) => preset === tag) ||
+    LEGACY_PRESET_TAGS.some((preset) => preset === tag)
+  );
 }
 
 function isOptionalScore(value: number | null) {
@@ -40,7 +48,8 @@ export function hasAnyScore(scores: ReviewScoreFields) {
   return (
     (scores.rating != null && scores.rating >= 1) ||
     (scores.difficulty != null && scores.difficulty >= 1) ||
-    (scores.grading != null && scores.grading >= 1)
+    (scores.grading != null && scores.grading >= 1) ||
+    (scores.attendance != null && scores.attendance >= 1)
   );
 }
 
@@ -99,8 +108,12 @@ export function validateReviewForm(values: ReviewFormValues) {
     return "给分评分需为 1-5 星，或不评分";
   }
 
+  if (!isOptionalScore(values.attendance)) {
+    return "签到频率需为 1-5 星，或不评分";
+  }
+
   if (!hasAnyScore(values)) {
-    return "请至少选择一项评分（综合 / 难度 / 给分）";
+    return "请至少选择一项评分（难度 / 给分 / 签到 / 综合）";
   }
 
   const tags = normalizeReviewTags(values.tags);

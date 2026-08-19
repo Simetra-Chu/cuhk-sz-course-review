@@ -21,6 +21,7 @@ export type DbCourse = {
   avg_rating: number;
   avg_difficulty: number;
   avg_grading: number;
+  avg_attendance: number;
   review_count: number;
   request_count: number;
   created_at: string;
@@ -37,6 +38,7 @@ export type DbReview = {
   rating: number | null;
   difficulty: number | null;
   grading: number | null;
+  attendance: number | null;
   tags: string[];
   content: string;
   status: "visible" | "hidden";

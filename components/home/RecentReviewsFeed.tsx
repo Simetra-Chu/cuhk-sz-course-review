@@ -57,6 +57,7 @@ export function RecentReviewsFeed({ reviews }: RecentReviewsFeedProps) {
                 </span>
                 <span>难度 {formatScoreLabel(review.difficulty)}</span>
                 <span>给分 {formatScoreLabel(review.grading)}</span>
+                <span>签到 {formatScoreLabel(review.attendance)}</span>
               </div>
 
               {review.tags.length > 0 && (

@@ -206,6 +206,9 @@ export function CourseMixedFeed({
               <span className="rounded-full bg-purple-50 px-2 py-0.5 text-purple-800">
                 给分 {formatScoreLabel(scores?.grading)}
               </span>
+              <span className="rounded-full bg-purple-50 px-2 py-0.5 text-purple-800">
+                签到 {formatScoreLabel(scores?.attendance)}
+              </span>
             </div>
             {(post.tags ?? []).length > 0 && (
               <div className="mt-2 flex flex-wrap gap-1.5">

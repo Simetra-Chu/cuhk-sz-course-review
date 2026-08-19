@@ -43,6 +43,9 @@ export function ReviewForm({
   const [grading, setGrading] = useState(
     editing ? existingReview?.grading ?? 0 : 0
   );
+  const [attendance, setAttendance] = useState(
+    editing ? existingReview?.attendance ?? 0 : 0
+  );
   const [tags, setTags] = useState<string[]>(
     editing ? existingReview?.tags ?? [] : []
   );
@@ -140,6 +143,7 @@ export function ReviewForm({
       rating: normalizeOptionalScore(rating),
       difficulty: normalizeOptionalScore(difficulty),
       grading: normalizeOptionalScore(grading),
+      attendance: normalizeOptionalScore(attendance),
     };
 
     const validationError = validateReviewForm({
@@ -204,6 +208,7 @@ export function ReviewForm({
       setRating(0);
       setDifficulty(0);
       setGrading(0);
+      setAttendance(0);
       setTags([]);
       setRatingManual(false);
     }
@@ -238,6 +243,7 @@ export function ReviewForm({
     setRating(0);
     setDifficulty(0);
     setGrading(0);
+    setAttendance(0);
     setTags([]);
     setCustomTagDraft("");
     setShowCustomTagInput(false);
@@ -256,7 +262,7 @@ export function ReviewForm({
         <span className="text-xs text-gray-500">匿名展示</span>
       </div>
 
-      <div className="mt-6 grid gap-5 sm:grid-cols-3">
+      <div className="mt-6 grid gap-5 sm:grid-cols-2">
         <ScoreInput
           label="课程难度"
           value={difficulty}
@@ -268,6 +274,12 @@ export function ReviewForm({
           value={grading}
           onChange={(value) => applyDimensionChange(difficulty, value)}
           hint="1 严格 → 5 慷慨"
+        />
+        <ScoreInput
+          label="签到频率"
+          value={attendance}
+          onChange={setAttendance}
+          hint="1 很少签到 → 5 很频繁"
         />
         <ScoreInput
           label="综合评分"

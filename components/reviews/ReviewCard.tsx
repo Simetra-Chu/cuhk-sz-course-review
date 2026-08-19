@@ -62,6 +62,7 @@ export function ReviewCard({
             <ScoreBadge label="综合" value={review.rating} />
             <ScoreBadge label="难度" value={review.difficulty} />
             <ScoreBadge label="给分" value={review.grading} />
+            <ScoreBadge label="签到" value={review.attendance} />
           </div>
         </div>
 

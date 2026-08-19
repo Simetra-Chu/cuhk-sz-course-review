@@ -46,7 +46,9 @@ as $$
       from unnest(coalesce(p_tags, '{}'::text[])) as tag
       where tag <> all(array[
         '给分慷慨', '给分严格', '作业适中', '作业量大',
-        '推荐', '避雷', '签到少', '点名频繁'
+        '推荐', '避雷',
+        -- 历史数据兼容：旧评价上的签到标签仍视为合法预设（新表单不再可选）
+        '签到少', '点名频繁'
       ]::text[])
     ) <= 2;
 $$;
@@ -88,6 +90,7 @@ create table if not exists public.courses (
   avg_rating numeric(3, 2) not null default 0,
   avg_difficulty numeric(3, 2) not null default 0,
   avg_grading numeric(3, 2) not null default 0,
+  avg_attendance numeric(3, 2) not null default 0,
   review_count integer not null default 0,
   request_count integer not null default 0 check (request_count >= 0),
   created_at timestamptz not null default now(),
@@ -102,6 +105,7 @@ create table if not exists public.reviews (
   rating smallint check (rating is null or rating between 1 and 5),
   difficulty smallint check (difficulty is null or difficulty between 1 and 5),
   grading smallint check (grading is null or grading between 1 and 5),
+  attendance smallint check (attendance is null or attendance between 1 and 5),
   tags text[] not null default '{}' check (public.valid_review_tags(tags)),
   content text not null default ''
     check (
@@ -373,6 +377,7 @@ begin
     avg_rating = coalesce(s.avg_rating, 0),
     avg_difficulty = coalesce(s.avg_difficulty, 0),
     avg_grading = coalesce(s.avg_grading, 0),
+    avg_attendance = coalesce(s.avg_attendance, 0),
     review_count = coalesce(s.review_count, 0),
     updated_at = now()
   from (
@@ -380,6 +385,7 @@ begin
       round(avg(rating) filter (where rating is not null)::numeric, 2) as avg_rating,
       round(avg(difficulty) filter (where difficulty is not null)::numeric, 2) as avg_difficulty,
       round(avg(grading) filter (where grading is not null)::numeric, 2) as avg_grading,
+      round(avg(attendance) filter (where attendance is not null)::numeric, 2) as avg_attendance,
       count(*)::integer as review_count
     from public.reviews
     where course_id = p_course_id

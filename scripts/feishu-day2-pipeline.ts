@@ -6,7 +6,7 @@
  * - 基础课（被多门课当作先修）加权后约 20% 抽样
  * - 清洗：隐私 / 人身攻击 / 全负面
  * - 分流：有教授 → professor_recommendations（逐条独立写入，不拼接）；无教授 → discussion_posts
- * - 评分：按文本语义生成综合/难度/给分；按飞书活跃度生成多份离散评分与求评价权重
+ * - 评分：按文本语义生成综合/难度/给分/签到频率；按飞书活跃度生成多份离散评分与求评价权重
  *
  * 用法：
  *   # 从目录全量 API 抓取 + 抽样清洗（不入库）
@@ -59,6 +59,8 @@ type PreparedText = {
   content: string;
   recommend_score: number | null;
   course_type: string;
+  /** 飞书「签到频率」原文，供评分模拟优先使用 */
+  attendance_hint?: string | null;
   kind: "professor" | "discussion";
 };
 
@@ -67,6 +69,7 @@ type PreparedScore = {
   rating: number;
   difficulty: number;
   grading: number;
+  attendance: number;
 };
 
 type PreparedBundle = {
@@ -223,11 +226,12 @@ function prepareBundle(
       content: cleaned.text,
       recommend_score: row.recommend_score,
       course_type: row.course_type,
+      attendance_hint: row.attendance || null,
       kind: prof ? "professor" : "discussion",
     });
   }
 
-  // 按课活跃度生成多份离散三维分（语义 + 飞书推荐分锚点）
+  // 按课活跃度生成多份离散评分（语义 + 飞书推荐分锚点；含签到频率）
   const byCourse = new Map<string, PreparedText[]>();
   for (const row of texts) {
     const list = byCourse.get(row.course_code) ?? [];
@@ -243,7 +247,8 @@ function prepareBundle(
       const simulated = simulateScoresFromText(
         src.content,
         src.recommend_score,
-        opts.rng()
+        opts.rng(),
+        src.attendance_hint
       );
       scores.push({ course_code, ...simulated });
     }
@@ -281,7 +286,7 @@ function normalizeBundle(data: PreparedBundle & { ratings?: PreparedBundle["rati
     list.push(row);
     byCourse.set(row.course_code, list);
   }
-  // 始终按当前语义模型重算三维分（综合依赖难度/给分，ρ≈0.35）
+  // 始终按当前语义模型重算评分（综合依赖难度/给分，ρ≈0.35；签到独立）
   const scores: PreparedScore[] = [];
   for (const [course_code, rows] of Array.from(byCourse.entries())) {
     const count = activity[course_code] ?? rows.length;
@@ -293,7 +298,8 @@ function normalizeBundle(data: PreparedBundle & { ratings?: PreparedBundle["rati
         ...simulateScoresFromText(
           src.content,
           src.recommend_score,
-          (i + 1) / (scoreCopies + 1)
+          (i + 1) / (scoreCopies + 1),
+          src.attendance_hint
         ),
       });
     }
@@ -308,6 +314,7 @@ function normalizeBundle(data: PreparedBundle & { ratings?: PreparedBundle["rati
           suggestOverallFromDimensions(difficulty, grading, 0.5) ?? r.rating,
         difficulty,
         grading,
+        attendance: 3,
       });
     }
   }
@@ -526,6 +533,7 @@ async function importBundle(
       rating: row.rating,
       difficulty: row.difficulty,
       grading: row.grading,
+      attendance: row.attendance,
       content: "",
       tags: [],
       is_imported: true,
@@ -805,7 +813,7 @@ async function main() {
     sample_percent: args.samplePercent,
     seed: args.seed,
     policy: {
-      score_field: "文本语义 + 飞书推荐分 → reviews.(rating,difficulty,grading)",
+      score_field: "文本语义 + 飞书推荐分 → reviews.(rating,difficulty,grading,attendance)",
       foundation_weight: args.foundationWeight,
       foundation_threshold: args.foundationThreshold,
       professor_or_discussion: true,
